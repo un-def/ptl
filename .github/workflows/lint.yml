@@ -1,0 +1,23 @@
+name: run linters
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  lint:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: install tox
+        run: pip install --no-deps requirements/requirements.tox.in
+      - name: run linters
+        run: tox run -e lint
