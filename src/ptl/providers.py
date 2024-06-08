@@ -1,0 +1,143 @@
+import dataclasses
+import shlex
+import shutil
+import subprocess
+from pathlib import Path
+from typing import ClassVar, Dict, Iterable, List, Optional, Tuple, Union
+
+from ._error import Error
+from .compat import StrEnum
+
+
+class ExecutableNotFound(Error):
+
+    def __init__(
+        self, name_or_path: Union[str, Path], message: Optional[str] = None,
+    ) -> None:
+        self.name_or_path = name_or_path
+        self.message = message
+
+    def __str__(self) -> str:
+        msg = f'{self.name_or_path} not found'
+        if self.message:
+            return f'{msg}: {self.message}'
+        return msg
+
+
+class ToolVersionCheckFailed(Error):
+
+    def __str__(self) -> str:
+        if not (cause := self.__cause__):
+            return 'unknown error'
+        if isinstance(cause, subprocess.CalledProcessError):
+            cmd = cause.cmd
+            if not isinstance(cmd, (str, Path)):
+                cmd = ' '.join(map(str, cmd))
+            return (
+                f'{cmd} returned non-zero exit status '
+                f'{cause.returncode}:\n{cause.output}'
+            )
+        return str(cause)
+
+
+class ToolNotFound(Error):
+
+    def __init__(self, tool: str, candidates: Iterable[str]) -> None:
+        self.tool = tool
+        self.candidates = tuple(candidates)
+
+    def __str__(self) -> str:
+        candidates = ', '.join(f'`{c}`' for c in self.candidates)
+        return (
+            f'{self.tool} tool not found, '
+            f'candidates tried: {candidates}'
+        )
+
+
+class Tool(StrEnum):
+    COMPILE = 'compile'
+    SYNC = 'sync'
+
+
+@dataclasses.dataclass(frozen=True)
+class Provider:
+    PIP_TOOLS: ClassVar['Provider']
+    UV: ClassVar['Provider']
+
+    tools: Dict[Tool, str]
+
+    _registry: ClassVar[Dict[str, 'Provider']] = {}
+
+    @classmethod
+    def register(cls, attr_name: str, provider: 'Provider') -> None:
+        setattr(cls, attr_name, provider)
+        cls._registry[attr_name] = provider
+
+    @classmethod
+    def get_tool_candidates(cls, tool: Union[Tool, str]) -> Tuple[str, ...]:
+        if not isinstance(tool, Tool):
+            tool = Tool(tool)
+        return tuple(prov.tools[tool] for prov in cls._registry.values())
+
+
+Provider.register('PIP_TOOLS', Provider(
+    tools={
+        Tool.COMPILE: 'pip-compile',
+        Tool.SYNC: 'pip-sync',
+    },
+))
+
+
+Provider.register('UV', Provider(
+    tools={
+        Tool.COMPILE: 'uv pip compile',
+        Tool.SYNC: 'uv pip sync',
+    },
+))
+
+
+def find_executable(name_or_path: str) -> Path:
+    # execname, but not /foo/bar/execname, bar/execname, ./execname, etc.
+    if Path(name_or_path).name == name_or_path:
+        if not (_exec_path := shutil.which(name_or_path)):
+            raise ExecutableNotFound(name_or_path)
+        return Path(_exec_path)
+    exec_path = Path(name_or_path).resolve()
+    if not exec_path.is_file():
+        raise ExecutableNotFound(exec_path, 'not a file')
+    return exec_path
+
+
+def process_command_line(command_line: Union[Iterable[str], str]) -> List[str]:
+    if isinstance(command_line, str):
+        # XXX: won't properly work on Windows!
+        command_line = shlex.split(command_line)
+    else:
+        command_line = list(command_line)
+    command_line[0] = str(find_executable(command_line[0]))
+    return command_line
+
+
+def check_tool_version(
+    command_line: Union[Iterable[str], str],
+) -> Tuple[List[str], str]:
+    try:
+        command_line = process_command_line(command_line)
+    except ExecutableNotFound as exc:
+        raise ToolVersionCheckFailed from exc
+    try:
+        output = subprocess.check_output(
+            [*command_line, '--version'], stderr=subprocess.STDOUT, text=True)
+    except subprocess.CalledProcessError as exc:
+        raise ToolVersionCheckFailed from exc
+    return command_line, output.strip()
+
+
+def find_tool(tool: Union[Tool, str]) -> Tuple[List[str], str]:
+    candidates = Provider.get_tool_candidates(tool)
+    for command_line in candidates:
+        try:
+            return check_tool_version(command_line)
+        except ToolVersionCheckFailed:
+            pass
+    raise ToolNotFound(tool, candidates)

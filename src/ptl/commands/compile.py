@@ -1,0 +1,41 @@
+import logging
+import subprocess
+from pathlib import Path
+from typing import Iterable, Optional, Union
+
+from ..exceptions import Error
+from ..infile import (
+    ReferenceType, get_requirements_dir, read_infiles, sort_infiles,
+)
+from ..providers import Tool, find_tool
+
+
+log = logging.getLogger(__name__)
+
+
+def compile(
+    requirements_dir: Optional[Union[Path, str]] = None,
+    compile_command_line: Optional[Iterable[Union[Path, str]]] = None,
+) -> None:
+    requirements_dir = get_requirements_dir(requirements_dir)
+    log.debug('requirements dir: %s', requirements_dir)
+    if not compile_command_line:
+        compile_command_line, _ = find_tool(Tool.COMPILE)
+    log.debug('using %s', compile_command_line)
+    cwd = Path.cwd()
+    for infile in sort_infiles(read_infiles(requirements_dir)):
+        log.info('compiling %s', infile)
+        output_file = (requirements_dir / infile.output_name).relative_to(cwd)
+        with infile.temporarily_write_to(
+            requirements_dir, references_as=ReferenceType.CONSTRAINTS,
+        ) as input_file:
+            compile_cmd = [
+                *compile_command_line,
+                input_file.relative_to(cwd),
+                '-o', output_file,
+            ]
+            log.debug('calling %s', compile_cmd)
+            try:
+                subprocess.check_call(compile_cmd)
+            except subprocess.CalledProcessError:
+                raise Error
