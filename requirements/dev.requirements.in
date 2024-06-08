@@ -1,0 +1,4 @@
+-r lint.requirements.txt
+-r test.requirements.txt
+
+tox==4.15.1

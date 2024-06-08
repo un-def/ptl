@@ -3,3 +3,7 @@
 !.gitignore
 
 *.py[co]
+
+/requirements/local.*
+
+/src/ptl.egg-info/

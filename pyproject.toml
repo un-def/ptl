@@ -59,3 +59,22 @@ use_parentheses = true
 addopts = ["--strict-markers"]
 testpaths = ["tests"]
 filterwarnings = ["error"]
+
+[tool.tox]
+legacy_tox_ini = """
+    [tox]
+    env_list = py{38,39,310,311,312}, test, lint
+
+    [testenv]
+    description = run tests
+    deps = -r requirements/test.requirements.in
+    commands = pytest {posargs}
+
+    [testenv:lint]
+    description = run linters
+    skip_install = true
+    deps = -r requirements/lint.requirements.in
+    commands =
+        ruff check
+        isort -c .
+"""
