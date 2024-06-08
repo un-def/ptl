@@ -1,5 +1,45 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
 [project]
+name = "ptl"
+description = "pip-tools, layered"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [{name = "Dmitry Meyer", email = "me@undef.im"}]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: POSIX :: Linux",
+    "Intended Audience :: Developers",
+    "Topic :: Utilities",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
 requires-python = ">=3.8"
+dynamic = ["version"]
+
+[project.urls]
+Homepage = "https://github.com/un-def/ptl"
+Repository = "https://github.com/un-def/ptl.git"
+Changelog = "https://github.com/un-def/ptl/blob/master/CHANGELOG.md"
+Issues = "https://github.com/un-def/ptl/issues"
+
+[project.scripts]
+ptl = "ptl.cli:main"
+
+[tool.setuptools.dynamic]
+version = {attr = "ptl.__version__"}
+
+[tool.setuptools]
+zip-safe = true
+include-package-data = false
 
 [tool.ruff]
 preview = true
@@ -14,3 +54,8 @@ lines_after_imports = 2
 multi_line_output = 5
 include_trailing_comma = true
 use_parentheses = true
+
+[tool.pytest.ini_options]
+addopts = ["--strict-markers"]
+testpaths = ["tests"]
+filterwarnings = ["error"]

@@ -20,7 +20,7 @@ class Args(argparse.Namespace):
     use_pip_tools: bool
     custom_tool: Optional[str]
 
-    requirements_dir: Optional[str]
+    input_dir: Optional[str]
     verbose: int
     quiet: int
 
@@ -47,8 +47,8 @@ def add_command_options(
 
     command_options = command_parser.add_argument_group(f'{command} options')
     command_options.add_argument(
-        '-d', '--directory', metavar='DIR', dest='requirements_dir',
-        help='requirements directory',
+        '-d', '--directory', metavar='DIR', dest='input_dir',
+        help='input directory',
     )
 
     logging_options = command_options.add_mutually_exclusive_group()
@@ -124,14 +124,14 @@ def do_main(argv: Optional[Sequence[str]] = None) -> None:
         verbosity = 0
     configure_logging(verbosity)
 
-    requirements_dir = args.requirements_dir
+    input_dir = args.input_dir
     command = args.command
 
     if command in Tool:
         tool_command_line = get_tool_command_line(args)
         if command == Tool.COMPILE:
             commands.compile(
-                requirements_dir=requirements_dir,
+                input_dir=input_dir,
                 compile_command_line=tool_command_line,
             )
         elif command == Tool.SYNC:
@@ -139,7 +139,7 @@ def do_main(argv: Optional[Sequence[str]] = None) -> None:
         else:
             assert False, 'should not reach here'
     elif command == 'show':
-        commands.show(requirements_dir)
+        commands.show(input_dir)
     else:
         assert False, 'should not reach here'
 

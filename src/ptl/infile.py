@@ -6,8 +6,12 @@ from typing import (
     Any, Dict, Iterable, Iterator, List, Optional, Set, Tuple, Union,
 )
 
+from ._error import Error
 from .compat import StrEnum
-from .exceptions import Error
+
+
+class InputDirectoryError(Error):
+    pass
 
 
 class ReferenceType(StrEnum):
@@ -124,15 +128,15 @@ _REFERENCE_REGEX = re.compile(
     r'^-(?P<type>[rc])\s*(?P<stem>[\w.-]+?)(?:\.in|\.txt)?$')
 
 
-def read_infiles(requirements_dir: Union[Path, str]) -> Tuple[InFile, ...]:
-    requirements_dir = Path(requirements_dir)
-    input_paths = tuple(requirements_dir.glob('*.in'))
+def read_infiles(input_dir: Union[Path, str]) -> Tuple[InFile, ...]:
+    input_dir = Path(input_dir)
+    input_paths = tuple(input_dir.glob('*.in'))
     if not input_paths:
         raise Error('no *.in files')
     stems_to_infiles: Dict[str, InFile] = {
         (infile := InFile(path)).stem: infile for path in input_paths}
     for infile in stems_to_infiles.values():
-        for line in open(requirements_dir / infile.original_name):
+        for line in open(input_dir / infile.original_name):
             line = line.strip()
             if not line or line.startswith('#'):
                 continue
@@ -174,17 +178,17 @@ def sort_infiles(infiles: Iterable[InFile]) -> List[InFile]:
     return sorted_infiles
 
 
-def get_requirements_dir(
-    requirements_dir: Optional[Union[Path, str]] = None,
-) -> Path:
-    if requirements_dir:
-        requirements_dir = Path(requirements_dir)
-        if not requirements_dir.is_dir():
-            raise Error('-d not a dir')
+def get_input_dir(input_dir: Optional[Union[Path, str]] = None) -> Path:
+    if input_dir:
+        input_dir = Path(input_dir)
+        if not input_dir.exists():
+            raise InputDirectoryError(f'{input_dir} does not exist')
+        if not input_dir.is_dir():
+            raise InputDirectoryError(f'{input_dir} is not a directory')
     else:
-        requirements_dir = Path('requirements')
-        if not requirements_dir.is_dir():
-            requirements_dir = Path('.')
-            if not next(requirements_dir.glob('*.in'), None):
-                raise Error('requirements dir not found')
-    return requirements_dir.resolve()
+        input_dir = Path('requirements')
+        if not input_dir.is_dir():
+            input_dir = Path('.')
+            if not next(input_dir.glob('*.in'), None):
+                raise InputDirectoryError('input directory not found')
+    return input_dir.resolve()
