@@ -14,6 +14,18 @@ class InputDirectoryError(Error):
     pass
 
 
+class ReferenceError(Error):
+    pass
+
+
+class UnknownReference(ReferenceError):
+    pass
+
+
+class CircularReference(ReferenceError):
+    pass
+
+
 class ReferenceType(StrEnum):
     REQUIREMENTS = 'r'
     CONSTRAINTS = 'c'
@@ -30,12 +42,21 @@ class Reference:
             type = ReferenceType(type)
         self.type = type
         self.infile = infile
+        self._tuple = (type, infile)
 
     def __str__(self) -> str:
         return f'-{self.type} {self.infile.output_name}'
 
     def __repr__(self) -> str:
         return f'{self.type.name.capitalize()}({self.infile})'
+
+    def __eq__(self, other: Any) -> bool:
+        if not isinstance(other, self.__class__):
+            return NotImplemented
+        return self._tuple == other._tuple
+
+    def __hash__(self) -> int:
+        return hash(self._tuple)
 
     def copy_as(self, type: ReferenceType) -> 'Reference':
         return self.__class__(type, self.infile)
@@ -131,29 +152,28 @@ _REFERENCE_REGEX = re.compile(
 def read_infiles(input_dir: Union[Path, str]) -> Tuple[InFile, ...]:
     input_dir = Path(input_dir)
     input_paths = tuple(input_dir.glob('*.in'))
-    if not input_paths:
-        raise Error('no *.in files')
     stems_to_infiles: Dict[str, InFile] = {
         (infile := InFile(path)).stem: infile for path in input_paths}
     for infile in stems_to_infiles.values():
-        for line in open(input_dir / infile.original_name):
-            line = line.strip()
-            if not line or line.startswith('#'):
-                continue
-            if comment_match := _INLINE_COMMENT_REGEX.search(line):
-                line = line[:comment_match.start()]
-            ref_match = _REFERENCE_REGEX.fullmatch(line)
-            if not ref_match:
-                infile.add_dependencies(line)
-                continue
-            ref_type: str = ref_match.group('type')
-            ref_stem: str = ref_match.group('stem')
-            try:
-                ref_infile = stems_to_infiles[ref_stem]
-            except KeyError:
-                raise Error(f'{infile}: unknown reference {ref_stem}')
-            ref = Reference(ref_type, ref_infile)
-            infile.add_reference(ref)
+        with open(input_dir / infile.original_name) as fobj:
+            for line in fobj:
+                line = line.strip()
+                if not line or line.startswith('#'):
+                    continue
+                if comment_match := _INLINE_COMMENT_REGEX.search(line):
+                    line = line[:comment_match.start()]
+                ref_match = _REFERENCE_REGEX.fullmatch(line)
+                if not ref_match:
+                    infile.add_dependencies(line)
+                    continue
+                ref_type: str = ref_match.group('type')
+                ref_stem: str = ref_match.group('stem')
+                try:
+                    ref_infile = stems_to_infiles[ref_stem]
+                except KeyError:
+                    raise UnknownReference(f'{infile}: {ref_stem}')
+                ref = Reference(ref_type, ref_infile)
+                infile.add_reference(ref)
     return tuple(stems_to_infiles.values())
 
 
@@ -174,8 +194,15 @@ def sort_infiles(infiles: Iterable[InFile]) -> List[InFile]:
             if infile not in _processed
         }
     if len(_infiles_with_refs) != 0:
-        raise Error('circular refs')
+        raise CircularReference
     return sorted_infiles
+
+
+def get_infiles(input_dir: Union[Path, str]) -> List[InFile]:
+    infiles = read_infiles(input_dir)
+    if not infiles:
+        raise InputDirectoryError('no *.in files')
+    return sort_infiles(infiles)
 
 
 def get_input_dir(input_dir: Optional[Union[Path, str]] = None) -> Path:

@@ -1,12 +1,17 @@
 from ._error import Error
-from .infile import InputDirectoryError
+from .infile import (
+    CircularReference, InputDirectoryError, ReferenceError, UnknownReference,
+)
 from .providers import ExecutableNotFound, ToolNotFound, ToolVersionCheckFailed
 
 
 __all__ = [
     'Error',
-    'ExecutableNotFound',
     'InputDirectoryError',
-    'ToolVersionCheckFailed',
+    'ReferenceError',
+    'CircularReference',
+    'UnknownReference',
+    'ExecutableNotFound',
     'ToolNotFound',
+    'ToolVersionCheckFailed',
 ]

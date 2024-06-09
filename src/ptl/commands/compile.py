@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Iterable, Optional, Union
 
 from ..exceptions import Error
-from ..infile import ReferenceType, get_input_dir, read_infiles, sort_infiles
+from ..infile import ReferenceType, get_infiles, get_input_dir
 from ..providers import Tool, find_tool
 
 
@@ -21,7 +21,7 @@ def compile(
         compile_command_line, _ = find_tool(Tool.COMPILE)
     log.debug('using %s', compile_command_line)
     cwd = Path.cwd()
-    for infile in sort_infiles(read_infiles(input_dir)):
+    for infile in get_infiles(input_dir):
         log.info('compiling %s', infile)
         output_file = (input_dir / infile.output_name).relative_to(cwd)
         with infile.temporarily_write_to(
