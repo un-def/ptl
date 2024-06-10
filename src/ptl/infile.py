@@ -2,9 +2,7 @@ import operator
 import re
 from contextlib import contextmanager
 from pathlib import Path
-from typing import (
-    Any, Dict, Iterable, Iterator, List, Optional, Set, Tuple, Union,
-)
+from typing import Any, Dict, Iterable, Iterator, List, Optional, Tuple, Union
 
 from ._error import Error
 from .compat import StrEnum
@@ -67,7 +65,7 @@ class InFile:
     generated_name: str
     output_name: str
     stem: str
-    references: Set[Reference]
+    references: List[Reference]
     dependencies: List[str]
 
     def __init__(self, name_or_path: Union[Path, str]) -> None:
@@ -76,7 +74,7 @@ class InFile:
         self.original_name = path.name
         self.generated_name = f'{stem}.ptl.in'
         self.output_name = f'{stem}.txt'
-        self.references = set()
+        self.references = []
         self.dependencies = []
 
     def __str__(self) -> str:
@@ -94,7 +92,7 @@ class InFile:
         return hash(self.original_name)
 
     def add_reference(self, reference: Reference) -> None:
-        self.references.add(reference)
+        self.references.append(reference)
 
     def iterate_references(self, *, recursive: bool) -> Iterator[Reference]:
         for ref in self.references:
@@ -102,7 +100,7 @@ class InFile:
             if recursive:
                 yield from ref.infile.iterate_references(recursive=True)
 
-    def add_dependencies(self, dependency: str) -> None:
+    def add_dependency(self, dependency: str) -> None:
         self.dependencies.append(dependency.strip())
 
     def render(
@@ -164,7 +162,7 @@ def read_infiles(input_dir: Union[Path, str]) -> Tuple[InFile, ...]:
                     line = line[:comment_match.start()]
                 ref_match = _REFERENCE_REGEX.fullmatch(line)
                 if not ref_match:
-                    infile.add_dependencies(line)
+                    infile.add_dependency(line)
                     continue
                 ref_type: str = ref_match.group('type')
                 ref_stem: str = ref_match.group('stem')
@@ -179,7 +177,7 @@ def read_infiles(input_dir: Union[Path, str]) -> Tuple[InFile, ...]:
 
 def sort_infiles(infiles: Iterable[InFile]) -> List[InFile]:
     sorted_infiles: List[InFile] = []
-    _infiles_with_refs: Dict[InFile, Set[Reference]] = {
+    _infiles_with_refs: Dict[InFile, List[Reference]] = {
         infile: infile.references for infile in infiles}
     while True:
         _processed = {
@@ -189,7 +187,7 @@ def sort_infiles(infiles: Iterable[InFile]) -> List[InFile]:
         sorted_infiles.extend(
             sorted(_processed, key=operator.attrgetter('stem')))
         _infiles_with_refs = {
-            infile: {ref for ref in refs if ref.infile not in _processed}
+            infile: [ref for ref in refs if ref.infile not in _processed]
             for infile, refs in _infiles_with_refs.items()
             if infile not in _processed
         }

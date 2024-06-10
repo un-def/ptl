@@ -40,11 +40,11 @@ class TestSuite(BaseTestSuite):
             'baz#notacomment',
             'https://example.com#egg=foo',
         ]
-        assert main.references == {
+        assert main.references == [
             Reference('r', InFile('parent-1.in')),
-            Reference('c', InFile('parent-2.in')),
             Reference('r', InFile('parent-3.in')),
-        }
+            Reference('c', InFile('parent-2.in')),
+        ]
 
     def test_unknown_reference(self):
         self.create_infile('main.in', '-r unknown.txt')

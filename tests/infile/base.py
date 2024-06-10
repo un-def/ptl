@@ -9,9 +9,7 @@ class BaseTestSuite:
     input_dir: Path
 
     @pytest.fixture(autouse=True)
-    def base_setup(self, tmp_path: Path) -> None:
-        input_dir = tmp_path / 'input_dir'
-        input_dir.mkdir()
+    def base_setup(self, input_dir: Path) -> None:
         self.input_dir = input_dir
 
     def create_infile(self, name: str, content: Optional[str] = None) -> Path:
