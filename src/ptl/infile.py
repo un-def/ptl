@@ -21,7 +21,12 @@ class UnknownReference(ReferenceError):
 
 
 class CircularReference(ReferenceError):
-    pass
+
+    def __init__(self, infiles: Iterable['InFile']) -> None:
+        self.infiles = tuple(infiles)
+
+    def __str__(self) -> str:
+        return ', '.join(map(str, self.infiles))
 
 
 class ReferenceType(StrEnum):
@@ -192,7 +197,7 @@ def sort_infiles(infiles: Iterable[InFile]) -> List[InFile]:
             if infile not in _processed
         }
     if len(_infiles_with_refs) != 0:
-        raise CircularReference
+        raise CircularReference(_infiles_with_refs)
     return sorted_infiles
 
 
