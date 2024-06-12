@@ -114,7 +114,12 @@ def main(argv: Optional[Sequence[str]] = None) -> None:
 
 def do_main(argv: Optional[Sequence[str]] = None) -> None:
     parser = build_parser()
-    args = parser.parse_args(argv, namespace=Args())
+    args, tool_args = parser.parse_known_args(argv, namespace=Args())
+    command = args.command
+    if command not in Tool and tool_args:
+        # only sync and compile accept extra args, other commands should raise
+        # an error, the simplest way to do it is just call parse_args()
+        parser.parse_args(argv)
 
     verbosity: int = 0
     verbosity_arg: Optional[str] = None
@@ -127,12 +132,12 @@ def do_main(argv: Optional[Sequence[str]] = None) -> None:
     configure_logging(verbosity)
 
     input_dir = args.input_dir
-    command = args.command
 
     if command in Tool:
         tool_command_line = get_tool_command_line(args)
         if verbosity_arg:
             tool_command_line.append(verbosity_arg)
+        tool_command_line.extend(tool_args)
         if command == Tool.COMPILE:
             commands.compile(
                 input_dir=input_dir,
