@@ -58,7 +58,7 @@ def add_command_options(
     )
     logging_options.add_argument(
         '-q', '--quiet', action='count', default=0,
-        help='get less output, can be used up to 3 times',
+        help='get less output',
     )
 
     general_options = command_parser.add_argument_group('general options')
@@ -116,12 +116,14 @@ def do_main(argv: Optional[Sequence[str]] = None) -> None:
     parser = build_parser()
     args = parser.parse_args(argv, namespace=Args())
 
+    verbosity: int = 0
+    verbosity_arg: Optional[str] = None
     if quiet := args.quiet:
         verbosity = -quiet
+        verbosity_arg = '-{}'.format('q' * quiet)
     elif verbose := args.verbose:
         verbosity = verbose
-    else:
-        verbosity = 0
+        verbosity_arg = '-{}'.format('v' * verbose)
     configure_logging(verbosity)
 
     input_dir = args.input_dir
@@ -129,6 +131,8 @@ def do_main(argv: Optional[Sequence[str]] = None) -> None:
 
     if command in Tool:
         tool_command_line = get_tool_command_line(args)
+        if verbosity_arg:
+            tool_command_line.append(verbosity_arg)
         if command == Tool.COMPILE:
             commands.compile(
                 input_dir=input_dir,
@@ -145,22 +149,16 @@ def do_main(argv: Optional[Sequence[str]] = None) -> None:
 
 
 def configure_logging(verbosity: int) -> None:
-    if verbosity >= 1:
+    if verbosity > 0:
         log_level = logging.DEBUG
-    elif verbosity == 0:
-        log_level = logging.INFO
-    elif verbosity == -1:
-        log_level = logging.WARNING
-    elif verbosity == -2:
+    elif verbosity < 0:
         log_level = logging.ERROR
-    elif verbosity <= -3:
-        log_level = logging.CRITICAL
     else:
-        assert False, 'should not reach here'
+        log_level = logging.INFO
     if log_level == logging.DEBUG:
         log_format = '[ %(asctime)s | %(name)s | %(levelname)s ] %(message)s'
     else:
-        log_format = '*** %(message)s'
+        log_format = '%(message)s'
     logging.basicConfig(
         level=log_level, format=log_format, datefmt='%d-%m-%Y %H:%M:%S')
 
