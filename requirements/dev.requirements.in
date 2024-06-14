@@ -1,3 +1,6 @@
 -r lint.requirements.txt
 -r test.requirements.txt
 -r tox.requirements.txt
+
+pip-tools==7.4.1
+uv==0.2.11

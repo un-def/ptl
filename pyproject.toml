@@ -78,3 +78,14 @@ legacy_tox_ini = """
         ruff check
         isort -c .
 """
+
+[tool.uv.pip]
+generate-hashes = true
+no-header = true
+
+[tool.pip-tools.compile]
+generate-hashes = true
+no-header = true
+strip-extras = true
+allow-unsafe = true
+resolver = "backtracking"
