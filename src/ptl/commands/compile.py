@@ -3,12 +3,16 @@ import subprocess
 from pathlib import Path
 from typing import Iterable, Optional, Union
 
-from ..exceptions import Error
+from .._error import Error
 from ..infile import ReferenceType, get_infiles, get_input_dir
 from ..providers import Tool, find_tool
 
 
 log = logging.getLogger(__name__)
+
+
+class CompileError(Error):
+    pass
 
 
 def compile(
@@ -35,5 +39,5 @@ def compile(
             log.debug('calling %s', compile_cmd)
             try:
                 subprocess.check_call(compile_cmd)
-            except subprocess.CalledProcessError:
-                raise Error
+            except subprocess.CalledProcessError as exc:
+                raise CompileError from exc

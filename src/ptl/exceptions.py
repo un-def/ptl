@@ -1,4 +1,5 @@
 from ._error import Error
+from .commands.compile import CompileError
 from .infile import (
     CircularReference, InputDirectoryError, ReferenceError, UnknownReference,
 )
@@ -14,4 +15,5 @@ __all__ = [
     'ExecutableNotFound',
     'ToolNotFound',
     'ToolVersionCheckFailed',
+    'CompileError',
 ]

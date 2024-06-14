@@ -25,19 +25,7 @@ class ExecutableNotFound(Error):
 
 
 class ToolVersionCheckFailed(Error):
-
-    def __str__(self) -> str:
-        if not (cause := self.__cause__):
-            return 'unknown error'
-        if isinstance(cause, subprocess.CalledProcessError):
-            cmd = cause.cmd
-            if not isinstance(cmd, (str, Path)):
-                cmd = ' '.join(map(str, cmd))
-            return (
-                f'{cmd} returned non-zero exit status '
-                f'{cause.returncode}:\n{cause.output}'
-            )
-        return str(cause)
+    pass
 
 
 class ToolNotFound(Error):
