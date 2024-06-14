@@ -1,5 +1,6 @@
 from ._error import Error
 from .commands.compile import CompileError
+from .commands.sync import SyncError
 from .infile import (
     CircularReference, InputDirectoryError, ReferenceError, UnknownReference,
 )
@@ -16,4 +17,5 @@ __all__ = [
     'ToolNotFound',
     'ToolVersionCheckFailed',
     'CompileError',
+    'SyncError',
 ]

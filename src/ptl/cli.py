@@ -144,7 +144,10 @@ def do_main(argv: Optional[Sequence[str]] = None) -> None:
                 compile_command_line=tool_command_line,
             )
         elif command == Tool.SYNC:
-            raise NotImplementedError
+            commands.sync(
+                input_dir=input_dir,
+                sync_command_line=tool_command_line,
+            )
         else:
             assert False, 'should not reach here'
     elif command == 'show':
