@@ -24,3 +24,16 @@ lint:
 
 @run *args:
   python -m ptl "${@}"
+
+_ensure-uv:
+  #!/bin/sh -eu
+  cd requirements
+  installed=$(pip freeze | grep uv) || true
+  required=$(grep -Eo '^uv==.[0-9a-z.]+' dev.requirements.in) || exit 127
+  test "${installed}" = "${required}" || pip install "${required}"
+
+@sync *args: _ensure-uv
+  just run sync --uv "${@}"
+
+@compile *args: _ensure-uv
+  just run compile --uv "${@}"
