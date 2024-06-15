@@ -63,12 +63,15 @@ filterwarnings = ["error"]
 [tool.tox]
 legacy_tox_ini = """
     [tox]
-    env_list = py{38,39,310,311,312}, test, lint
+    env_list = py{38,39,310,311,312}, lint
 
     [testenv]
     description = run tests
     deps = -r requirements/test.requirements.in
     commands = pytest {posargs}
+
+    # for CI -- `tox run -e test`
+    [testenv:test]
 
     [testenv:lint]
     description = run linters

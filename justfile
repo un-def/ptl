@@ -19,8 +19,8 @@ lint:
 @test *args:
   pytest "${@}"
 
-tox *args:
-  tox run --skip-env '^test$' "${@}"
+@tox *args:
+  tox run "${@}"
 
 @run *args:
   python -m ptl "${@}"
