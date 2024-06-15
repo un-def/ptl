@@ -28,7 +28,7 @@ lint:
 _ensure-uv:
   #!/bin/sh -eu
   cd requirements
-  installed=$(pip freeze | grep uv) || true
+  installed=$(pip freeze | grep -E '^uv==') || true
   required=$(grep -Eo '^uv==.[0-9a-z.]+' dev.requirements.in) || exit 127
   test "${installed}" = "${required}" || pip install "${required}"
 
