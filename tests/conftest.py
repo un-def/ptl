@@ -1,18 +1,14 @@
-import os
 from pathlib import Path
-from typing import Iterator
 
 import pytest
 
 
 @pytest.fixture
-def tmp_cwd(tmp_path: Path) -> Iterator[Path]:
-    cwd = os.getcwd()
+def tmp_cwd(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Path:
     tmp_cwd = tmp_path / 'tmp_cwd'
     tmp_cwd.mkdir()
-    os.chdir(tmp_cwd)
-    yield tmp_cwd
-    os.chdir(cwd)
+    monkeypatch.chdir(tmp_cwd)
+    return tmp_cwd
 
 
 @pytest.fixture

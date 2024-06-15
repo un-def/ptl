@@ -84,13 +84,17 @@ Provider.register('UV', Provider(
 ))
 
 
-def find_executable(name_or_path: str) -> Path:
-    # execname, but not /foo/bar/execname, bar/execname, ./execname, etc.
-    if Path(name_or_path).name == name_or_path:
-        if not (_exec_path := shutil.which(name_or_path)):
-            raise ExecutableNotFound(name_or_path)
-        return Path(_exec_path)
-    exec_path = Path(name_or_path).resolve()
+def find_executable(name_or_path: Union[Path, str]) -> Path:
+    if isinstance(name_or_path, str):
+        # execname, but not /foo/bar/execname, bar/execname, ./execname, etc.
+        if Path(name_or_path).name == name_or_path:
+            if _exec_path := shutil.which(name_or_path):
+                return Path(_exec_path)
+            raise ExecutableNotFound(name_or_path, 'not in PATH')
+        name_or_path = Path(name_or_path)
+    exec_path = name_or_path.resolve()
+    if not exec_path.exists():
+        raise ExecutableNotFound(exec_path, 'does not exist')
     if not exec_path.is_file():
         raise ExecutableNotFound(exec_path, 'not a file')
     return exec_path
