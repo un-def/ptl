@@ -28,11 +28,11 @@ jobs:
       - name: install tox
         run: pip install -r requirements/tox.requirements.in
       - name: run tests
-        run: tox run -e test -- --cov
+        run: tox run -e test -- --cov --cov-report=xml
       - name: upload coverage
         uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          file: ./.coverage
+          file: ./coverage.xml
           disable_file_fixes: true
           disable_search: true
