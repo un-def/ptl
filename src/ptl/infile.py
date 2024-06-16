@@ -2,7 +2,9 @@ import operator
 import re
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Any, Dict, Iterable, Iterator, List, Optional, Tuple, Union
+from typing import (
+    Any, Dict, Iterable, Iterator, List, Literal, Optional, Tuple, Union, cast,
+)
 
 from ._error import Error
 from .compat import StrEnum
@@ -29,9 +31,18 @@ class CircularReference(ReferenceError):
         return ', '.join(map(str, self.infiles))
 
 
+ReferenceTypeOrLiteral = Union['ReferenceType', Literal['r', 'c']]
+
+
 class ReferenceType(StrEnum):
     REQUIREMENTS = 'r'
     CONSTRAINTS = 'c'
+
+    @classmethod
+    def cast(cls, value: ReferenceTypeOrLiteral) -> 'ReferenceType':
+        if isinstance(value, cls):
+            return value
+        return cls(value)
 
 
 class Reference:
@@ -39,10 +50,9 @@ class Reference:
     infile: 'InFile'
 
     def __init__(
-        self, type: Union[ReferenceType, str], infile: 'InFile',
+        self, type: ReferenceTypeOrLiteral, infile: 'InFile',
     ) -> None:
-        if not isinstance(type, ReferenceType):
-            type = ReferenceType(type)
+        type = ReferenceType.cast(type)
         self.type = type
         self.infile = infile
         self._tuple = (type, infile)
@@ -61,7 +71,8 @@ class Reference:
     def __hash__(self) -> int:
         return hash(self._tuple)
 
-    def copy_as(self, type: ReferenceType) -> 'Reference':
+    def copy_as(self, type: ReferenceTypeOrLiteral) -> 'Reference':
+        type = ReferenceType.cast(type)
         return self.__class__(type, self.infile)
 
 
@@ -99,23 +110,39 @@ class InFile:
     def add_reference(self, reference: Reference) -> None:
         self.references.append(reference)
 
-    def iterate_references(self, *, recursive: bool) -> Iterator[Reference]:
+    def iterate_references(
+        self, *, recursive: bool,
+        as_: Optional[ReferenceTypeOrLiteral] = None,
+    ) -> Iterator[Reference]:
+        if as_:
+            as_ = ReferenceType.cast(as_)
         for ref in self.references:
-            yield ref
+            if as_:
+                yield ref.copy_as(as_)
+            else:
+                yield ref
             if recursive:
-                yield from ref.infile.iterate_references(recursive=True)
+                recursive_as: Optional[ReferenceType]
+                if as_:
+                    recursive_as = as_
+                elif ref.type == ReferenceType.CONSTRAINTS:
+                    recursive_as = ReferenceType.CONSTRAINTS
+                else:
+                    recursive_as = None
+                yield from ref.infile.iterate_references(
+                    recursive=True, as_=recursive_as)
 
     def add_dependency(self, dependency: str) -> None:
         self.dependencies.append(dependency.strip())
 
     def render(
-        self, *, references_as: Optional[ReferenceType] = None,
+        self, *, references_as: Optional[ReferenceTypeOrLiteral] = None,
     ) -> str:
         return ''.join(self._line_iter(references_as=references_as))
 
     def write_to(
         self, directory: Union[Path, str],
-        *, references_as: Optional[ReferenceType] = None,
+        *, references_as: Optional[ReferenceTypeOrLiteral] = None,
     ) -> Path:
         path = Path(directory) / self.generated_name
         with open(path, 'wt') as fobj:
@@ -125,7 +152,7 @@ class InFile:
     @contextmanager
     def temporarily_write_to(
         self, directory: Union[Path, str],
-        *, references_as: Optional[ReferenceType] = None,
+        *, references_as: Optional[ReferenceTypeOrLiteral] = None,
     ) -> Iterator[Path]:
         path: Optional[Path] = None
         try:
@@ -136,7 +163,7 @@ class InFile:
                 path.unlink()
 
     def _line_iter(
-        self, *, references_as: Optional[ReferenceType],
+        self, *, references_as: Optional[ReferenceTypeOrLiteral] = None,
     ) -> Iterator[str]:
         references = self.iterate_references(recursive=True)
         if references_as:
@@ -169,7 +196,7 @@ def read_infiles(input_dir: Union[Path, str]) -> Tuple[InFile, ...]:
                 if not ref_match:
                     infile.add_dependency(line)
                     continue
-                ref_type: str = ref_match.group('type')
+                ref_type = cast(Literal['r', 'c'], ref_match.group('type'))
                 ref_stem: str = ref_match.group('stem')
                 try:
                     ref_infile = stems_to_infiles[ref_stem]

@@ -1,13 +1,12 @@
 from pathlib import Path
-from typing import Union
 
 import pytest
 
-from ptl.infile import InFile, Reference, ReferenceType
+from ptl.infile import InFile, Reference, ReferenceType, ReferenceTypeOrLiteral
 
 
 @pytest.mark.parametrize('ref_type', ['c', ReferenceType.CONSTRAINTS])
-def test_attributes(ref_type: Union[ReferenceType, str]):
+def test_attributes(ref_type: ReferenceTypeOrLiteral):
     infile = InFile('main.in')
     ref = Reference(ref_type, infile)
 
@@ -41,10 +40,11 @@ def test_not_equal_type():
     assert ref_1 != ref_2
 
 
-def test_copy_as():
+@pytest.mark.parametrize('ref_type', ['r', ReferenceType.REQUIREMENTS])
+def test_copy_as(ref_type: ReferenceTypeOrLiteral):
     infile = InFile('main.in')
     ref = Reference(ReferenceType.CONSTRAINTS, infile)
 
-    ref_copy = ref.copy_as(ReferenceType.REQUIREMENTS)
+    ref_copy = ref.copy_as(ref_type)
 
     assert ref_copy == Reference(ReferenceType.REQUIREMENTS, infile)

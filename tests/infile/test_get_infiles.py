@@ -35,7 +35,7 @@ class TestSuite(BaseTestSuite):
         )
         assert infiles[2].render() == (
             '-c parent.txt\n'
-            '-r grandparent.txt\n'
+            '-c grandparent.txt\n'
             'foo\n'
         )
 
