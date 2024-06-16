@@ -60,6 +60,10 @@ addopts = ["--strict-markers"]
 testpaths = ["tests"]
 filterwarnings = ["error"]
 
+[tool.coverage.run]
+source = ["src", "tests"]
+relative_files = true
+
 [tool.tox]
 legacy_tox_ini = """
     [tox]
