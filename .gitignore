@@ -8,5 +8,7 @@
 /requirements/local.*
 
 /src/ptl.egg-info/
+/build/
+/dist/
 
 coverage.xml
