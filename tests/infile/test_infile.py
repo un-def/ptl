@@ -1,11 +1,9 @@
 from pathlib import Path
-from typing import Union
+from typing import Dict, Union
 
 import pytest
 
-from ptl.infile import (
-    Dict, InFile, Reference, ReferenceType, ReferenceTypeOrLiteral,
-)
+from ptl.infile import InFile, Reference, ReferenceType, ReferenceTypeOrLiteral
 
 
 @pytest.mark.parametrize('name_or_path', [
