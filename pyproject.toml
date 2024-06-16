@@ -61,7 +61,7 @@ testpaths = ["tests"]
 filterwarnings = ["error"]
 
 [tool.coverage.run]
-source = ["src", "tests"]
+source = ["ptl", "tests"]
 relative_files = true
 
 [tool.tox]
