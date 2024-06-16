@@ -65,6 +65,9 @@ source = ["ptl", "tests"]
 omit = ["__main__.py"]
 relative_files = true
 
+[tool.coverage.report]
+exclude_also = ["assert False"]
+
 [tool.tox]
 legacy_tox_ini = """
     [tox]

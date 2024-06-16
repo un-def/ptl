@@ -116,7 +116,16 @@ def do_main(argv: Optional[Sequence[str]] = None) -> None:
     parser = build_parser()
     args, tool_args = parser.parse_known_args(argv, namespace=Args())
     command = args.command
-    if command not in Tool and tool_args:
+
+    is_tool: bool
+    try:
+        Tool(command)
+    except ValueError:
+        is_tool = False
+    else:
+        is_tool = True
+
+    if not is_tool and tool_args:
         # only sync and compile accept extra args, other commands should raise
         # an error, the simplest way to do it is just call parse_args()
         parser.parse_args(argv)
@@ -133,7 +142,7 @@ def do_main(argv: Optional[Sequence[str]] = None) -> None:
 
     input_dir = args.input_dir
 
-    if command in Tool:
+    if is_tool:
         tool_command_line = get_tool_command_line(args)
         if verbosity_arg:
             tool_command_line.append(verbosity_arg)
