@@ -62,6 +62,7 @@ filterwarnings = ["error"]
 
 [tool.coverage.run]
 source = ["ptl", "tests"]
+omit = ["__main__.py"]
 relative_files = true
 
 [tool.tox]

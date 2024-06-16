@@ -3,7 +3,7 @@ import shlex
 import shutil
 import subprocess
 from pathlib import Path
-from typing import ClassVar, Dict, Iterable, List, Optional, Tuple, Union
+from typing import ClassVar, Dict, Iterable, List, Tuple, Union
 
 from ._error import Error
 from .compat import StrEnum
@@ -12,16 +12,13 @@ from .compat import StrEnum
 class ExecutableNotFound(Error):
 
     def __init__(
-        self, name_or_path: Union[str, Path], message: Optional[str] = None,
+        self, name_or_path: Union[str, Path], message: str,
     ) -> None:
         self.name_or_path = name_or_path
         self.message = message
 
     def __str__(self) -> str:
-        msg = f'{self.name_or_path} not found'
-        if self.message:
-            return f'{msg}: {self.message}'
-        return msg
+        return f'{self.name_or_path} not found: {self.message}'
 
 
 class ToolVersionCheckFailed(Error):

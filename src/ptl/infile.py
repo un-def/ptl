@@ -50,7 +50,7 @@ class Reference:
     def __str__(self) -> str:
         return f'-{self.type} {self.infile.output_name}'
 
-    def __repr__(self) -> str:
+    def __repr__(self) -> str:   # pragma: no cover
         return f'{self.type.name.capitalize()}({self.infile})'
 
     def __eq__(self, other: Any) -> bool:
@@ -85,7 +85,7 @@ class InFile:
     def __str__(self) -> str:
         return self.original_name
 
-    def __repr__(self) -> str:
+    def __repr__(self) -> str:   # pragma: no cover
         return f'{self.__class__.__name__}({self})'
 
     def __eq__(self, other: Any) -> bool:

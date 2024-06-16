@@ -13,8 +13,6 @@ class BaseTestSuite:
         self.input_dir = input_dir
 
     def create_infile(self, name: str, content: Optional[str] = None) -> Path:
-        if not name.endswith('.in'):
-            name = f'{name}.in'
         infile = self.input_dir / name
         if content:
             infile.write_text(dedent(content.lstrip('\n')))
