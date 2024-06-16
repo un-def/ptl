@@ -5,7 +5,6 @@ from typing import Iterable, Optional, Union
 
 from .._error import Error
 from ..infile import ReferenceType, get_infiles, get_input_dir
-from ..providers import Tool, find_tool
 
 
 log = logging.getLogger(__name__)
@@ -16,14 +15,12 @@ class CompileError(Error):
 
 
 def compile(
+    command_line: Iterable[Union[Path, str]],
     input_dir: Optional[Union[Path, str]] = None,
-    compile_command_line: Optional[Iterable[Union[Path, str]]] = None,
 ) -> None:
+    log.debug('using %s', command_line)
     input_dir = get_input_dir(input_dir)
     log.debug('input dir: %s', input_dir)
-    if not compile_command_line:
-        compile_command_line, _ = find_tool(Tool.COMPILE)
-    log.debug('using %s', compile_command_line)
     cwd = Path.cwd()
     for infile in get_infiles(input_dir):
         log.info('compiling %s', infile)
@@ -31,13 +28,13 @@ def compile(
         with infile.temporarily_write_to(
             input_dir, references_as=ReferenceType.CONSTRAINTS,
         ) as input_file:
-            compile_cmd = [
-                *compile_command_line,
+            cmd = [
+                *command_line,
                 input_file.relative_to(cwd),
                 '-o', output_file,
             ]
-            log.debug('calling %s', compile_cmd)
+            log.debug('calling %s', cmd)
             try:
-                subprocess.check_call(compile_cmd)
+                subprocess.check_call(cmd)
             except subprocess.CalledProcessError as exc:
                 raise CompileError from exc

@@ -140,13 +140,13 @@ def do_main(argv: Optional[Sequence[str]] = None) -> None:
         tool_command_line.extend(tool_args)
         if command == Tool.COMPILE:
             commands.compile(
+                command_line=tool_command_line,
                 input_dir=input_dir,
-                compile_command_line=tool_command_line,
             )
         elif command == Tool.SYNC:
             commands.sync(
+                command_line=tool_command_line,
                 input_dir=input_dir,
-                sync_command_line=tool_command_line,
             )
         else:
             assert False, 'should not reach here'
@@ -186,5 +186,5 @@ def get_tool_command_line(args: Args) -> List[str]:
             command_line, version = check_tool_version(command_line_str)
         else:
             command_line, version = find_tool(tool)
-        log.debug('using %s version %s', command_line, version)
+        log.debug('using %s %s', command_line, version)
     return command_line
