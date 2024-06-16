@@ -16,6 +16,10 @@ lint:
   ruff check
   isort . -c
 
+type:
+  mypy
+  pyright
+
 @test *args:
   pytest "${@}"
 

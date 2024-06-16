@@ -42,7 +42,7 @@ def show_mock(monkeypatch: pytest.MonkeyPatch) -> Mock:
 
 def test_error_reporing(
     caplog: pytest.LogCaptureFixture, monkeypatch: pytest.MonkeyPatch,
-):
+) -> None:
     caplog.set_level(logging.ERROR)
     mock = Mock(
         spec_set=do_main, side_effect=InputDirectoryError('does not exist'))
@@ -57,7 +57,7 @@ def test_error_reporing(
 
 def test_extra_args_not_allowed_if_not_tool(
     capsys: pytest.CaptureFixture[str],
-):
+) -> None:
     with pytest.raises(SystemExit) as excinfo:
         main(['show', '--foo'])
 
@@ -77,7 +77,7 @@ def test_extra_args_not_allowed_if_not_tool(
 @pytest.mark.usefixtures('get_tool_command_line_mock', 'compile_mock')
 def test_configure_logging_call(
     monkeypatch: pytest.MonkeyPatch, flags: List[str], expected_verbosity: int,
-):
+) -> None:
     mock = Mock(spec_set=configure_logging)
     monkeypatch.setattr('ptl.cli.configure_logging', mock)
 
@@ -98,7 +98,7 @@ def test_compile_call(
     get_tool_command_line_mock: Mock, compile_mock: Mock,
     command_line: List[str],
     expected_command_line: List[str], expected_input_dir: Optional[str],
-):
+) -> None:
     _expected_command_line = (
         get_tool_command_line_mock.return_value + expected_command_line)
 
@@ -121,7 +121,7 @@ def test_compile_call(
 def test_sync_call(
     get_tool_command_line_mock: Mock, sync_mock: Mock, command_line: List[str],
     expected_command_line: List[str], expected_input_dir: Optional[str],
-):
+) -> None:
     _expected_command_line = (
         get_tool_command_line_mock.return_value + expected_command_line)
 
@@ -140,7 +140,7 @@ def test_sync_call(
 def test_show_call(
     show_mock: Mock,
     command_line: List[str], expected_input_dir: Optional[str],
-):
+) -> None:
     main(command_line)
 
     show_mock.assert_called_once_with(input_dir=expected_input_dir)

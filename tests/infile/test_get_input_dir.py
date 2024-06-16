@@ -11,7 +11,9 @@ pytestmark = pytest.mark.usefixtures('tmp_cwd')
 
 
 @pytest.mark.parametrize('input_dir_arg', ['dir', Path('dir')])
-def test_passed_path_ok(tmp_cwd: Path, input_dir_arg: Union[str, Path]):
+def test_passed_path_ok(
+    tmp_cwd: Path, input_dir_arg: Union[str, Path],
+) -> None:
     path = tmp_cwd / 'dir'
     path.mkdir()
 
@@ -20,7 +22,7 @@ def test_passed_path_ok(tmp_cwd: Path, input_dir_arg: Union[str, Path]):
     assert input_dir == path
 
 
-def test_passed_path_not_a_dir(tmp_path: Path):
+def test_passed_path_not_a_dir(tmp_path: Path) -> None:
     path = tmp_path / 'file'
     path.touch()
 
@@ -30,14 +32,14 @@ def test_passed_path_not_a_dir(tmp_path: Path):
         get_input_dir(path)
 
 
-def test_passed_path_does_not_exist(tmp_path: Path):
+def test_passed_path_does_not_exist(tmp_path: Path) -> None:
     path = tmp_path / 'dir'
 
     with pytest.raises(InputDirectoryError, match=f'{path} does not exist'):
         get_input_dir(path)
 
 
-def test_autodiscovery_requirements_dir(tmp_cwd: Path):
+def test_autodiscovery_requirements_dir(tmp_cwd: Path) -> None:
     path = tmp_cwd / 'requirements'
     path.mkdir()
 
@@ -46,7 +48,7 @@ def test_autodiscovery_requirements_dir(tmp_cwd: Path):
     assert input_dir == path
 
 
-def test_autodiscovery_current_dir(tmp_cwd: Path):
+def test_autodiscovery_current_dir(tmp_cwd: Path) -> None:
     (tmp_cwd / 'base.in').touch()
 
     input_dir = get_input_dir()
@@ -54,6 +56,6 @@ def test_autodiscovery_current_dir(tmp_cwd: Path):
     assert input_dir == tmp_cwd
 
 
-def test_autodiscovery_not_found():
+def test_autodiscovery_not_found() -> None:
     with pytest.raises(InputDirectoryError, match='input directory not found'):
         get_input_dir()

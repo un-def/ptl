@@ -30,7 +30,7 @@ def registry(monkeypatch: pytest.MonkeyPatch) -> Registry:
     return registry
 
 
-def test_register(registry: Registry):
+def test_register(registry: Registry) -> None:
     Provider.register('DUMMY', DUMMY_PROVIDER)
     Provider.register('FAKE', FAKE_PROVIDER)
 
@@ -43,7 +43,7 @@ def test_register(registry: Registry):
 
 
 @pytest.mark.usefixtures('registry')
-def test_get_tool_candidates_tool_enum():
+def test_get_tool_candidates_tool_enum() -> None:
     Provider.register('DUMMY', DUMMY_PROVIDER)
     Provider.register('FAKE', FAKE_PROVIDER)
 
@@ -53,7 +53,7 @@ def test_get_tool_candidates_tool_enum():
 
 
 @pytest.mark.usefixtures('registry')
-def test_get_tool_candidates_str():
+def test_get_tool_candidates_str() -> None:
     Provider.register('FAKE', FAKE_PROVIDER)
     Provider.register('DUMMY', DUMMY_PROVIDER)
 

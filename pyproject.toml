@@ -55,6 +55,53 @@ multi_line_output = 5
 include_trailing_comma = true
 use_parentheses = true
 
+[tool.mypy]
+mypy_path = "${MYPY_CONFIG_FILE_DIR}/src"
+packages = ["ptl", "tests"]
+python_version = "3.8"   # the lowest Python version we support
+disallow_any_unimported = true
+disallow_any_explicit = true
+disallow_any_generics = true
+disallow_subclassing_any = true
+disallow_untyped_calls = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_return_any = true
+warn_unreachable = true
+implicit_reexport = false
+strict_equality = true
+warn_incomplete_stub = true
+extra_checks = true
+warn_unused_configs = true
+
+[tool.pyright]
+include = ["src/**", "tests/**"]
+pythonVersion = "3.8"   # the lowest Python version we support
+typeCheckingMode = "strict"
+reportMissingTypeStubs = "warning"
+reportUnusedImport = "error"
+reportUnusedClass = "error"
+reportUnusedFunction = "error"
+reportUnusedVariable = "error"
+reportUnusedExpression = "error"
+reportUnusedExcept = "error"
+reportDuplicateImport = "error"
+reportUnknownArgumentType = "error"
+reportUnknownLambdaType = "error"
+reportUnknownMemberType = "error"
+reportUnknownParameterType = "error"
+reportUnknownVariableType = "error"
+reportMissingTypeArgument = "error"
+reportUnnecessaryCast = "error"
+reportUnnecessaryIsInstance = "error"
+reportUnnecessaryComparison = "error"
+reportUnnecessaryContains = "error"
+
 [tool.pytest.ini_options]
 addopts = ["--strict-markers"]
 testpaths = ["tests"]
@@ -71,7 +118,7 @@ exclude_also = ["assert False"]
 [tool.tox]
 legacy_tox_ini = """
     [tox]
-    env_list = py{38,39,310,311,312}, lint
+    env_list = py{38,39,310,311,312}, lint, type
 
     [testenv]
     description = run tests
@@ -88,6 +135,17 @@ legacy_tox_ini = """
     commands =
         ruff check
         isort -c .
+
+    [testenv:type]
+    description = run type checkers
+    skip_install = true
+    deps =
+        -r requirements/type.requirements.in
+        # for stubs
+        -r requirements/test.requirements.in
+    commands =
+        mypy
+        pyright
 """
 
 [tool.uv.pip]

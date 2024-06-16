@@ -8,7 +8,7 @@ from ptl.infile import InFile, Reference, ReferenceType, ReferenceTypeOrLiteral
 
 @pytest.mark.parametrize('name_or_path', [
     'base.in', './base.in', Path('/path/to/base.in')])
-def test_attributes(name_or_path: Union[Path, str]):
+def test_attributes(name_or_path: Union[Path, str]) -> None:
     infile = InFile(name_or_path)
 
     assert infile.stem == 'base'
@@ -18,20 +18,20 @@ def test_attributes(name_or_path: Union[Path, str]):
 
 
 @pytest.mark.parametrize('path', ['test.in', Path('/path/to/test.in')])
-def test_equal(path: Union[Path, str]):
+def test_equal(path: Union[Path, str]) -> None:
     infile = InFile(path)
 
     assert infile == InFile('./test.in')
 
 
 @pytest.mark.parametrize('path', ['test.txt', Path('/path/to/test.IN')])
-def test_not_equal(path: Union[Path, str]):
+def test_not_equal(path: Union[Path, str]) -> None:
     infile = InFile(path)
 
     assert infile != InFile('./test.in')
 
 
-def test_add_dependency():
+def test_add_dependency() -> None:
     infile = InFile('test.in')
 
     infile.add_dependency('pytest <10\n')
@@ -45,7 +45,7 @@ def test_add_dependency():
     ]
 
 
-def test_add_reference():
+def test_add_reference() -> None:
     infile = InFile('test.in')
     ref_1 = Reference('c', InFile('dep-1.in'))
     ref_2 = Reference('r', InFile('dep-2.in'))
@@ -105,7 +105,7 @@ def build_infile_with_refs() -> InFile:
     return infile
 
 
-def test_iterate_references_non_recursive():
+def test_iterate_references_non_recursive() -> None:
     infile = InFile('main.in')
     refs = build_ref_tree(infile)
 
@@ -118,7 +118,9 @@ def test_iterate_references_non_recursive():
 
 
 @pytest.mark.parametrize('as_', ['r', ReferenceType.CONSTRAINTS])
-def test_iterate_references_non_recursive_as(as_: ReferenceTypeOrLiteral):
+def test_iterate_references_non_recursive_as(
+    as_: ReferenceTypeOrLiteral,
+) -> None:
     infile = InFile('main.in')
     refs = build_ref_tree(infile)
 
@@ -130,7 +132,7 @@ def test_iterate_references_non_recursive_as(as_: ReferenceTypeOrLiteral):
     ]
 
 
-def test_iterate_references_recursive():
+def test_iterate_references_recursive() -> None:
     infile = InFile('main.in')
     refs = build_ref_tree(infile)
 
@@ -147,7 +149,7 @@ def test_iterate_references_recursive():
 
 
 @pytest.mark.parametrize('as_', [ReferenceType.REQUIREMENTS, 'c'])
-def test_iterate_references_recursive_as(as_: ReferenceTypeOrLiteral):
+def test_iterate_references_recursive_as(as_: ReferenceTypeOrLiteral) -> None:
     infile = InFile('main.in')
     refs = build_ref_tree(infile)
 
@@ -163,7 +165,7 @@ def test_iterate_references_recursive_as(as_: ReferenceTypeOrLiteral):
     ]
 
 
-def test_render():
+def test_render() -> None:
     infile = build_infile_with_refs()
 
     rendered = infile.render()
@@ -180,7 +182,7 @@ def test_render():
     )
 
 
-def test_render_as_requirements():
+def test_render_as_requirements() -> None:
     infile = build_infile_with_refs()
 
     rendered = infile.render(references_as=ReferenceType.REQUIREMENTS)
@@ -197,7 +199,7 @@ def test_render_as_requirements():
     )
 
 
-def test_render_as_constraints():
+def test_render_as_constraints() -> None:
     infile = build_infile_with_refs()
 
     rendered = infile.render(references_as=ReferenceType.CONSTRAINTS)
@@ -214,7 +216,7 @@ def test_render_as_constraints():
     )
 
 
-def test_write_to(input_dir: Path):
+def test_write_to(input_dir: Path) -> None:
     infile = build_infile_with_refs()
     infile_path = input_dir / 'main.ptl.in'
 
@@ -233,7 +235,7 @@ def test_write_to(input_dir: Path):
     )
 
 
-def test_temporarily_write_to(input_dir: Path):
+def test_temporarily_write_to(input_dir: Path) -> None:
     infile = build_infile_with_refs()
 
     with infile.temporarily_write_to(input_dir) as infile_path:

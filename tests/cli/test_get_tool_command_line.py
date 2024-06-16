@@ -21,7 +21,7 @@ def parse_args(*args: str) -> Args:
 def test_tool_flag(
     monkeypatch: pytest.MonkeyPatch, command: str, flag: str,
     expected_command_line: str,
-):
+) -> None:
     mock = Mock(
         spec_set=check_tool_version,
         return_value=(['/path/to/tool', command], f'{command} 0.0.1'),
@@ -35,7 +35,7 @@ def test_tool_flag(
     mock.assert_called_once_with(expected_command_line)
 
 
-def test_custom_tool(monkeypatch: pytest.MonkeyPatch):
+def test_custom_tool(monkeypatch: pytest.MonkeyPatch) -> None:
     mock = Mock(
         spec_set=process_command_line,
         return_value=['/path/to/dummy', 'compile'],
@@ -55,7 +55,7 @@ def test_custom_tool(monkeypatch: pytest.MonkeyPatch):
 ])
 def test_autodiscovery(
     monkeypatch: pytest.MonkeyPatch, command: str, expected_tool: Tool,
-):
+) -> None:
     mock = Mock(
         spec_set=find_tool,
         return_value=(['/path/to/uv', 'pip', command], f'pip {command} 0.0.1'),

@@ -63,7 +63,7 @@ class Reference:
     def __repr__(self) -> str:   # pragma: no cover
         return f'{self.type.name.capitalize()}({self.infile})'
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: Any) -> bool:   # type: ignore[misc]
         if not isinstance(other, self.__class__):
             return NotImplemented
         return self._tuple == other._tuple
@@ -99,7 +99,7 @@ class InFile:
     def __repr__(self) -> str:   # pragma: no cover
         return f'{self.__class__.__name__}({self})'
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: Any) -> bool:   # type: ignore[misc]
         if not isinstance(other, self.__class__):
             return NotImplemented
         return self.original_name == other.original_name

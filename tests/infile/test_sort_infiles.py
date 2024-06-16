@@ -3,7 +3,7 @@ import pytest
 from ptl.infile import CircularReference, InFile, Reference, sort_infiles
 
 
-def test_ok():
+def test_ok() -> None:
     child_1 = InFile('child-1.in')
     child_2 = InFile('child-2.in')
     child_3 = InFile('child-3.in')
@@ -31,7 +31,7 @@ def test_ok():
     ]
 
 
-def test_circular_reference():
+def test_circular_reference() -> None:
     child = InFile('child.in')
     parent = InFile('parent.in')
     grandparent_1 = InFile('grandparent-1.in')

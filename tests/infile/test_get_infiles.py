@@ -7,7 +7,7 @@ from .base import BaseTestSuite
 
 class TestSuite(BaseTestSuite):
 
-    def test_ok(self):
+    def test_ok(self) -> None:
         self.create_infile('child.in', """
             -c parent.txt
             foo
@@ -39,6 +39,6 @@ class TestSuite(BaseTestSuite):
             'foo\n'
         )
 
-    def test_no_infiles(self):
+    def test_no_infiles(self) -> None:
         with pytest.raises(InputDirectoryError, match=r'no \*\.in files'):
             get_infiles(self.input_dir)

@@ -8,12 +8,12 @@ from .base import BaseTestSuite
 
 class TestSuite(BaseTestSuite):
 
-    def test_empty_input_dir(self):
+    def test_empty_input_dir(self) -> None:
         infiles = read_infiles(self.input_dir)
 
         assert infiles == ()
 
-    def test_parsing(self):
+    def test_parsing(self) -> None:
         self.create_infile('parent-1.in')
         self.create_infile('parent-2.in')
         self.create_infile('parent-3.in')
@@ -46,7 +46,7 @@ class TestSuite(BaseTestSuite):
             Reference('c', InFile('parent-2.in')),
         ]
 
-    def test_unknown_reference(self):
+    def test_unknown_reference(self) -> None:
         self.create_infile('main.in', '-r unknown.txt')
 
         with pytest.raises(UnknownReference, match='main.in: unknown'):

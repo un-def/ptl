@@ -20,7 +20,7 @@ def basic_config_mock(monkeypatch: pytest.MonkeyPatch) -> Mock:
     return mock
 
 
-def test_default(basic_config_mock: Mock):
+def test_default(basic_config_mock: Mock) -> None:
     configure_logging(0)
 
     basic_config_mock.assert_called_once_with(
@@ -28,7 +28,7 @@ def test_default(basic_config_mock: Mock):
 
 
 @pytest.mark.parametrize('verbosity', [1, 2, 10])
-def test_verbose(basic_config_mock: Mock, verbosity: int):
+def test_verbose(basic_config_mock: Mock, verbosity: int) -> None:
     configure_logging(verbosity)
 
     basic_config_mock.assert_called_once_with(
@@ -36,7 +36,7 @@ def test_verbose(basic_config_mock: Mock, verbosity: int):
 
 
 @pytest.mark.parametrize('verbosity', [-1, -2, -10])
-def test_quiet(basic_config_mock: Mock, verbosity: int):
+def test_quiet(basic_config_mock: Mock, verbosity: int) -> None:
     configure_logging(verbosity)
 
     basic_config_mock.assert_called_once_with(
