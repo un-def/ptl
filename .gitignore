@@ -8,3 +8,5 @@
 /requirements/local.*
 
 /src/ptl.egg-info/
+
+coverage.xml

@@ -28,7 +28,7 @@ jobs:
       - name: install tox
         run: pip install -r requirements/tox.requirements.in
       - name: run tests
-        run: tox run -e test -- --cov --cov-report=xml
+        run: tox run -e test -- --cov --cov-report=xml --cov-report=term-missing
       - name: upload coverage
         uses: codecov/codecov-action@v4
         with:
