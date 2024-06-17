@@ -3,6 +3,9 @@ from pathlib import Path
 import pytest
 
 
+pytest.register_assert_rewrite('tests.testlib')
+
+
 @pytest.fixture
 def tmp_cwd(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Path:
     tmp_cwd = tmp_path / 'tmp_cwd'

@@ -1,7 +1,8 @@
 from pathlib import Path
-from textwrap import dedent
 
 import pytest
+
+from tests.testlib import dedent
 
 
 class BaseTestSuite:
@@ -9,7 +10,7 @@ class BaseTestSuite:
     tmp_path: Path
     tmp_cwd: Path
 
-    exec_sh = dedent(str.lstrip("""
+    exec_sh = dedent("""
         #!/bin/sh
         if [ $# -lt 1 ]; then
             echo "usage: dummy COMMAND" >&2
@@ -28,7 +29,7 @@ class BaseTestSuite:
             echo "I'm a dummy"
             exit 3
         fi
-    """))
+    """)
 
     @pytest.fixture(autouse=True)
     def base_setup(

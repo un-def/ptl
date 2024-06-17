@@ -3,10 +3,10 @@ import pytest
 from ptl.exceptions import UnknownReference
 from ptl.infile import InFile, Reference, read_infiles
 
-from .base import BaseTestSuite
+from tests.testlib import InFileTestSuite
 
 
-class TestSuite(BaseTestSuite):
+class TestSuite(InFileTestSuite):
 
     def test_empty_input_dir(self) -> None:
         infiles = read_infiles(self.input_dir)

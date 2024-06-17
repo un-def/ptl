@@ -2,10 +2,10 @@ import pytest
 
 from ptl.infile import InFile, InputDirectoryError, get_infiles
 
-from .base import BaseTestSuite
+from tests.testlib import InFileTestSuite
 
 
-class TestSuite(BaseTestSuite):
+class TestSuite(InFileTestSuite):
 
     def test_ok(self) -> None:
         self.create_infile('child.in', """

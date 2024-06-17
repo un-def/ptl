@@ -1,0 +1,47 @@
+import pytest
+
+from ptl.commands import show
+from ptl.exceptions import InputDirectoryError
+
+from tests.testlib import InFileTestSuite
+
+
+class TestSuite(InFileTestSuite):
+
+    def test_ok(self, capsys: pytest.CaptureFixture[str]) -> None:
+        self.create_infile('child.in', """
+            -c parent.txt
+            foo  # comment
+        """)
+        self.create_infile('parent.in', """
+            -r grandparent
+
+            bar==0.0.1
+            # comment
+            baz
+        """)
+        self.create_infile('grandparent.in', """
+            qux
+        """)
+
+        show(self.input_dir)
+
+        assert capsys.readouterr().out == self.dedent("""
+            # grandparent.ptl.in
+            qux
+
+            # parent.ptl.in
+            -r grandparent.txt
+            bar==0.0.1
+            baz
+
+            # child.ptl.in
+            -c parent.txt
+            -c grandparent.txt
+            foo
+
+        """)
+
+    def test_error_no_infiles(self) -> None:
+        with pytest.raises(InputDirectoryError, match=r'no \*\.in files'):
+            show(self.input_dir)
