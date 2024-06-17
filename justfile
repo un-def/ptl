@@ -7,7 +7,7 @@ export PYTHONPATH := if _pythonpath == '' { src_dir } else { src_dir + ':' + _py
 
 
 @_list:
-  just --list
+  just --list --unsorted
 
 fix:
   isort .
