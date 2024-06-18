@@ -14,6 +14,8 @@ class Error(Exception):
                 cmd = ' '.join(map(str, cmd))
             msg = f'{cmd} returned non-zero exit status {cause.returncode}'
             if output := cause.output:
+                if isinstance(output, bytes):
+                    output = output.decode()
                 msg = f'{msg}:\n{output}'
             return msg
         return str(cause)
