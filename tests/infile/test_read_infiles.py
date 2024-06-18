@@ -14,10 +14,10 @@ class TestSuite(InFileTestSuite):
         assert infiles == ()
 
     def test_parsing(self) -> None:
-        self.create_infile('parent-1.in')
-        self.create_infile('parent-2.in')
-        self.create_infile('parent-3.in')
-        self.create_infile('main.in', """
+        self.create_file('parent-1.in')
+        self.create_file('parent-2.in')
+        self.create_file('parent-3.in')
+        self.create_file('main.in', """
             foo  ==3.3.1  #inline comment
             \t bar[extra]   \t\r
                 -r parent-1
@@ -47,7 +47,7 @@ class TestSuite(InFileTestSuite):
         ]
 
     def test_unknown_reference(self) -> None:
-        self.create_infile('main.in', '-r unknown.txt')
+        self.create_file('main.in', '-r unknown.txt')
 
         with pytest.raises(UnknownReference, match='main.in: unknown'):
             read_infiles(self.input_dir)

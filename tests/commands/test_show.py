@@ -9,18 +9,18 @@ from tests.testlib import InFileTestSuite
 class TestSuite(InFileTestSuite):
 
     def test_ok(self, capsys: pytest.CaptureFixture[str]) -> None:
-        self.create_infile('child.in', """
+        self.create_file('child.in', """
             -c parent.txt
             foo  # comment
         """)
-        self.create_infile('parent.in', """
+        self.create_file('parent.in', """
             -r grandparent
 
             bar==0.0.1
             # comment
             baz
         """)
-        self.create_infile('grandparent.in', """
+        self.create_file('grandparent.in', """
             qux
         """)
 

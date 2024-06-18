@@ -8,16 +8,16 @@ from tests.testlib import InFileTestSuite
 class TestSuite(InFileTestSuite):
 
     def test_ok(self) -> None:
-        self.create_infile('child.in', """
+        self.create_file('child.in', """
             -c parent.txt
             foo
         """)
-        self.create_infile('parent.in', """
+        self.create_file('parent.in', """
             -r grandparent
             bar
             baz
         """)
-        self.create_infile('grandparent.in', """
+        self.create_file('grandparent.in', """
             qux
         """)
 

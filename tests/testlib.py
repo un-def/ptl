@@ -20,7 +20,7 @@ class InFileTestSuite:
 
     dedent = staticmethod(dedent)
 
-    def create_infile(self, name: str, content: Optional[str] = None) -> Path:
+    def create_file(self, name: str, content: Optional[str] = None) -> Path:
         infile = self.input_dir / name
         if content:
             infile.write_text(self.dedent(content))

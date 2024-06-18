@@ -28,12 +28,16 @@ def sync(
         output_name = infile.output_name
         compiled_file = input_dir / output_name
         if compiled_file.exists():
-            compiled_files.append(compiled_file.relative_to(cwd))
+            try:
+                compiled_file = compiled_file.relative_to(cwd)
+            except ValueError:
+                pass
+            compiled_files.append(compiled_file)
         else:
             missing_files.append(output_name)
     if missing_files:
         raise SyncError(
-            f'not all files are compiled, missing: {missing_files}')
+            f'not all files are compiled, missing: {", ".join(missing_files)}')
     log.debug('syncing %s', compiled_files)
     cmd = [
         *command_line,
