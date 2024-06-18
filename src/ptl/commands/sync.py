@@ -5,6 +5,7 @@ from typing import Iterable, List, Optional, Union
 
 from .._error import Error
 from ..infile import get_infiles, get_input_dir
+from ..utils import try_relative_to
 
 
 log = logging.getLogger(__name__)
@@ -28,11 +29,7 @@ def sync(
         output_name = infile.output_name
         compiled_file = input_dir / output_name
         if compiled_file.exists():
-            try:
-                compiled_file = compiled_file.relative_to(cwd)
-            except ValueError:
-                pass
-            compiled_files.append(compiled_file)
+            compiled_files.append(try_relative_to(compiled_file, cwd))
         else:
             missing_files.append(output_name)
     if missing_files:

@@ -5,6 +5,7 @@ from typing import Iterable, Optional, Union
 
 from .._error import Error
 from ..infile import ReferenceType, get_infiles, get_input_dir
+from ..utils import try_relative_to
 
 
 log = logging.getLogger(__name__)
@@ -24,13 +25,13 @@ def compile(
     cwd = Path.cwd()
     for infile in get_infiles(input_dir):
         log.info('compiling %s', infile)
-        output_file = (input_dir / infile.output_name).relative_to(cwd)
+        output_file = try_relative_to(input_dir / infile.output_name, cwd)
         with infile.temporarily_write_to(
             input_dir, references_as=ReferenceType.CONSTRAINTS,
         ) as input_file:
             cmd = [
                 *command_line,
-                input_file.relative_to(cwd),
+                try_relative_to(input_file, cwd),
                 '-o', output_file,
             ]
             log.debug('calling %s', cmd)
