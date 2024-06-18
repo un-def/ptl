@@ -19,7 +19,9 @@ class TestSuite(InFileTestSuite):
     command_line = ['dummy', 'sync']
 
     @pytest.fixture(autouse=True)
-    def setup(self, monkeypatch: pytest.MonkeyPatch, tmp_cwd: Path) -> None:
+    def setup(
+        self, base_setup: None, monkeypatch: pytest.MonkeyPatch, tmp_cwd: Path,
+    ) -> None:
         self.monkeypatch = monkeypatch
         self.tmp_cwd = tmp_cwd
         check_call_mock = Mock(spec_set=subprocess.check_call)
