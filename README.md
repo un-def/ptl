@@ -1,5 +1,9 @@
 # ptl: pip-tools, layered
 
+[![PyPI - Version](https://img.shields.io/pypi/v/ptl)](https://pypi.org/project/ptl/)
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/ptl)](https://pypi.org/project/ptl/)
+[![GitHub License](https://img.shields.io/github/license/un-def/ptl)](https://github.com/un-def/ptl/blob/master/LICENSE)
+
 [![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/un-def/ptl/test.yml)](https://github.com/un-def/ptl/actions/workflows/test.yml)
 [![Codecov](https://img.shields.io/codecov/c/github/un-def/ptl)](https://app.codecov.io/gh/un-def/ptl)
 
@@ -77,7 +81,7 @@ ptl is a [pip-tools](https://pip-tools.readthedocs.io/) wrapper for [multi-layer
 
     As with `ptl compile`, any extra arguments are passed to the sync tool.
 
-### Planned Features
+## Planned Features
 
 * Ability to compile/sync only some of the files.
 * Configuration via the config file and/or the enviroment variables.
