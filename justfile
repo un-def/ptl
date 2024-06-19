@@ -41,3 +41,7 @@ _ensure-uv:
 
 @compile *args: _ensure-uv
   just run compile --uv "${@}"
+
+@build:
+  rm -rf build
+  python -m build
