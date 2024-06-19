@@ -6,6 +6,7 @@
 
 *.py[co]
 
+*.ptl.in
 /requirements/local.*
 
 /src/ptl.egg-info/
