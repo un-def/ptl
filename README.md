@@ -11,7 +11,7 @@ ptl is a [pip-tools](https://pip-tools.readthedocs.io/) wrapper for [multi-layer
 * It is supposed to be unopinionated — it doesn't have any options applied to the `pip-compile` command by default. Configure pip-tools as you wish.
 * It has no dependencies, including pip-tools. Bring your own tools.
 * It supports not only pip-tools, but also [uv](https://github.com/astral-sh/uv), or any other compatible tool.
-* Is has `pip-sync` functionality as well.
+* It has `pip-sync` functionality as well.
 
 ## Usage
 
