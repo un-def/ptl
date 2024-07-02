@@ -37,7 +37,7 @@ ptl is a [pip-tools](https://pip-tools.readthedocs.io/) wrapper for [multi-layer
     pip install uv
     ```
 
-3. Prepare input files. By default, ptl looks for input files in the `requirements` directory and the current working directory. You can check out [the `requirements` directory of the ptl repository](https://github.com/un-def/ptl/tree/master/requirements) for an example (yes, we [eat our own dog food](https://en.wikipedia.org/wiki/Eating_your_own_dog_food)).
+3. Prepare input files. By default, ptl looks for input files in the `requirements` directory and the current working directory. `<layer>.in` and `<layer>.requirements.in` filename formats are supported (although the latter may seem unnecessarily verbose, it's better suited for syntax highlighting rules — basically, any `*.requirements.{in,txt}` file as a “pip requirements” file). You can check out [the `requirements` directory of the ptl repository](https://github.com/un-def/ptl/tree/master/requirements) for an example (yes, we [eat our own dog food](https://en.wikipedia.org/wiki/Eating_your_own_dog_food)).
 
 4. Run `ptl compile`:
 
