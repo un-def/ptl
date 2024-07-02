@@ -21,6 +21,7 @@ def test_equal() -> None:
     ref_2 = Reference('r', infile_2)
 
     assert ref_1 == ref_2
+    assert hash(ref_1) == hash(ref_2)
 
 
 def test_not_equal_infile() -> None:
@@ -30,6 +31,7 @@ def test_not_equal_infile() -> None:
     ref_2 = Reference('r', infile_2)
 
     assert ref_1 != ref_2
+    assert hash(ref_1) != hash(ref_2)
 
 
 def test_not_equal_type() -> None:
@@ -38,6 +40,14 @@ def test_not_equal_type() -> None:
     ref_2 = Reference(ReferenceType.REQUIREMENTS, infile)
 
     assert ref_1 != ref_2
+    assert hash(ref_1) != hash(ref_2)
+
+
+def test_not_equal_other_is_not_reference() -> None:
+    infile = InFile('main.in')
+    ref = Reference('r', infile)
+
+    assert ref != infile
 
 
 @pytest.mark.parametrize('ref_type', ['r', ReferenceType.REQUIREMENTS])

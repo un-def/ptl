@@ -48,25 +48,38 @@ def test_attributes_with_suffix(name_or_path: Union[Path, str]) -> None:
 
 @pytest.mark.parametrize('path', ['test.in', Path('/path/to/test.in')])
 def test_equal_no_suffix(path: Union[Path, str]) -> None:
-    infile = InFile(path)
+    infile_1 = InFile(path)
+    infile_2 = InFile('./test.in')
 
-    assert infile == InFile('./test.in')
+    assert infile_1 == infile_2
+    assert hash(infile_1) == hash(infile_2)
 
 
 @pytest.mark.parametrize('path', [
     'test.requirements.in', Path('/path/to/test.requirements.in')])
 def test_equal_with_suffix(path: Union[Path, str]) -> None:
-    infile = InFile(path)
+    infile_1 = InFile(path)
+    infile_2 = InFile('./test.requirements.in')
 
-    assert infile == InFile('./test.requirements.in')
+    assert infile_1 == infile_2
+    assert hash(infile_1) == hash(infile_2)
 
 
 @pytest.mark.parametrize('path', [
     Path('/path/to/Test.in'), 'test.requirements.in'])
 def test_not_equal(path: Union[Path, str]) -> None:
-    infile = InFile(path)
+    infile_1 = InFile(path)
+    infile_2 = InFile('./test.in')
 
-    assert infile != InFile('./test.in')
+    assert infile_1 != infile_2
+    assert hash(infile_1) != hash(infile_2)
+
+
+def test_not_equal_other_is_not_infile() -> None:
+    infile = InFile('main.in')
+    reference = Reference('r', infile)
+
+    assert infile != reference
 
 
 def test_add_dependency() -> None:
