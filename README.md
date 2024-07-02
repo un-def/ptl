@@ -11,7 +11,7 @@
 
 ptl is a [pip-tools](https://pip-tools.readthedocs.io/) wrapper for [multi-layered requirements](https://pip-tools.readthedocs.io/en/stable/#workflow-for-layered-requirements). There is already a project with the similar goal — [pip-compile-multi](https://pip-compile-multi.readthedocs.io) — but ptl has some key differences:
 
-* It is much, much simpler. All it does is find requirements input files (`*.in`), generate intermediate input files (`*.ptl.in`) with all references include transitive ones, and call `pip-compile` in topological order.
+* It is much, much simpler. All it does is find requirements input files (`*.in`), generate intermediate input files with all references include transitive ones, and call `pip-compile` in topological order.
 * It is supposed to be unopinionated — it doesn't have any options applied to the `pip-compile` command by default. Configure pip-tools as you wish.
 * It has no dependencies, including pip-tools. Bring your own tools.
 * It supports not only pip-tools, but also [uv](https://github.com/astral-sh/uv), or any other compatible tool.
@@ -60,7 +60,7 @@ ptl is a [pip-tools](https://pip-tools.readthedocs.io/) wrapper for [multi-layer
 
     Any extra arguments are passed to the underlying tool.
 
-    As part of the compile process, ptl generates temporary intermediate input files next to the original input files. Normally they are deleted at the end of the operation, but it's a good practice to add `*.ptl.in` in your `.gitignore` anyway.
+    As part of the compile process, ptl generates temporary intermediate input files next to the original input files. Normally they are deleted at the end of the operation, but it's a good practice to add `*.ptl.in` (or `*.ptl.requirements.in` if you use the `<layer>.requirements.in` filename format) in your `.gitignore` anyway.
 
 5. Run `ptl sync`:
 

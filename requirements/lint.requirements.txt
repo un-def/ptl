@@ -1,7 +1,7 @@
 isort==5.13.2 \
     --hash=sha256:48fdfcb9face5d58a4f6dde2e72a1fb8dcaf8ab26f95ab49fab84c2ddefb0109 \
     --hash=sha256:8ca5e72a8d85860d5a3fa69b8745237f2939afe12dbf656afbcb47fe72d947a6
-    # via -r requirements/lint.requirements.ptl.in
+    # via -r requirements/lint.ptl.requirements.in
 ruff==0.4.8 \
     --hash=sha256:14019a06dbe29b608f6b7cbcec300e3170a8d86efaddb7b23405cb7f7dcaf780 \
     --hash=sha256:16d717b1d57b2e2fd68bd0bf80fb43931b79d05a7131aa477d66fc40fbd86268 \
@@ -20,4 +20,4 @@ ruff==0.4.8 \
     --hash=sha256:e9d5ce97cacc99878aa0d084c626a15cd21e6b3d53fd6f9112b7fc485918e1fa \
     --hash=sha256:eeceb78da8afb6de0ddada93112869852d04f1cd0f6b80fe464fd4e35c330913 \
     --hash=sha256:fc95aac2943ddf360376be9aa3107c8cf9640083940a8c5bd824be692d2216dc
-    # via -r requirements/lint.requirements.ptl.in
+    # via -r requirements/lint.ptl.requirements.in

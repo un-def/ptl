@@ -14,7 +14,15 @@ class InputDirectoryError(Error):
     pass
 
 
-class ReferenceError(Error):
+class InFileError(Error):
+    pass
+
+
+class InFileNameError(InFileError):
+    pass
+
+
+class ReferenceError(InFileError):
     pass
 
 
@@ -86,10 +94,20 @@ class InFile:
 
     def __init__(self, name_or_path: Union[Path, str]) -> None:
         path = Path(name_or_path)
-        self.stem = stem = path.stem
+        if path.suffix != '.in':
+            raise InFileNameError(path.name)
         self.original_name = path.name
-        self.generated_name = f'{stem}.ptl.in'
-        self.output_name = f'{stem}.txt'
+        stem: str
+        _stem = Path(path.stem)
+        if _stem.suffix == '.requirements':
+            stem = _stem.stem
+            self.generated_name = f'{stem}.ptl.requirements.in'
+            self.output_name = f'{stem}.requirements.txt'
+        else:
+            stem = _stem.name
+            self.generated_name = f'{stem}.ptl.in'
+            self.output_name = f'{stem}.txt'
+        self.stem = stem
         self.references = []
         self.dependencies = []
 
@@ -176,14 +194,21 @@ class InFile:
 
 _INLINE_COMMENT_REGEX = re.compile(r'\s+#')
 _REFERENCE_REGEX = re.compile(
-    r'^-(?P<type>[rc])\s*(?P<stem>[\w.-]+?)(?:\.in|\.txt)?$')
+    r'^-(?P<type>[rc])\s*'
+    r'(?P<stem>[\w.-]+?)(?:\.requirements)?(?:\.in|\.txt)?$'
+)
 
 
 def read_infiles(input_dir: Union[Path, str]) -> Tuple[InFile, ...]:
     input_dir = Path(input_dir)
-    input_paths = tuple(input_dir.glob('*.in'))
-    stems_to_infiles: Dict[str, InFile] = {
-        (infile := InFile(path)).stem: infile for path in input_paths}
+    stems_to_infiles: Dict[str, InFile] = {}
+    for input_path in tuple(input_dir.glob('*.in')):
+        infile = InFile(input_path)
+        stem = infile.stem
+        if another_infile := stems_to_infiles.get(stem):
+            raise InputDirectoryError(
+                f'conflicting names: {infile}, {another_infile}')
+        stems_to_infiles[stem] = infile
     for infile in stems_to_infiles.values():
         with open(input_dir / infile.original_name) as fobj:
             for line in fobj:

@@ -1,7 +1,7 @@
--r lint.requirements.txt
--r type.requirements.txt
--r test.requirements.txt
--r tox.requirements.txt
+-r lint
+-r type
+-r test
+-r tox
 
 pip-tools==7.4.1
 uv==0.2.11

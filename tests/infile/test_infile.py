@@ -3,12 +3,27 @@ from typing import Dict, Union
 
 import pytest
 
+from ptl.exceptions import InFileNameError
 from ptl.infile import InFile, Reference, ReferenceType, ReferenceTypeOrLiteral
+
+
+@pytest.mark.parametrize(['name_or_path', 'expected_message'], [
+    ('base.IN', 'base.IN'),
+    ('./.in', '.in'),
+    (Path('/path/to/base.notin'), 'base.notin'),
+])
+def test_name_error_wrong_suffix(
+    name_or_path: Union[Path, str], expected_message: str,
+) -> None:
+    with pytest.raises(InFileNameError) as excinfo:
+        InFile(name_or_path)
+
+    assert str(excinfo.value) == expected_message
 
 
 @pytest.mark.parametrize('name_or_path', [
     'base.in', './base.in', Path('/path/to/base.in')])
-def test_attributes(name_or_path: Union[Path, str]) -> None:
+def test_attributes_no_suffix(name_or_path: Union[Path, str]) -> None:
     infile = InFile(name_or_path)
 
     assert infile.stem == 'base'
@@ -17,14 +32,37 @@ def test_attributes(name_or_path: Union[Path, str]) -> None:
     assert infile.output_name == 'base.txt'
 
 
+@pytest.mark.parametrize('name_or_path', [
+    'base.requirements.in',
+    './base.requirements.in',
+    Path('/path/to/base.requirements.in'),
+])
+def test_attributes_with_suffix(name_or_path: Union[Path, str]) -> None:
+    infile = InFile(name_or_path)
+
+    assert infile.stem == 'base'
+    assert infile.original_name == 'base.requirements.in'
+    assert infile.generated_name == 'base.ptl.requirements.in'
+    assert infile.output_name == 'base.requirements.txt'
+
+
 @pytest.mark.parametrize('path', ['test.in', Path('/path/to/test.in')])
-def test_equal(path: Union[Path, str]) -> None:
+def test_equal_no_suffix(path: Union[Path, str]) -> None:
     infile = InFile(path)
 
     assert infile == InFile('./test.in')
 
 
-@pytest.mark.parametrize('path', ['test.txt', Path('/path/to/test.IN')])
+@pytest.mark.parametrize('path', [
+    'test.requirements.in', Path('/path/to/test.requirements.in')])
+def test_equal_with_suffix(path: Union[Path, str]) -> None:
+    infile = InFile(path)
+
+    assert infile == InFile('./test.requirements.in')
+
+
+@pytest.mark.parametrize('path', [
+    Path('/path/to/Test.in'), 'test.requirements.in'])
 def test_not_equal(path: Union[Path, str]) -> None:
     infile = InFile(path)
 
