@@ -51,12 +51,13 @@ def add_command_options(
         help='input directory',
     )
 
-    logging_options = command_options.add_mutually_exclusive_group()
-    logging_options.add_argument(
+    logging_options = command_parser.add_argument_group('logging options')
+    logging_verbosity = logging_options.add_mutually_exclusive_group()
+    logging_verbosity.add_argument(
         '-v', '--verbose', action='count', default=0,
         help='get more output',
     )
-    logging_options.add_argument(
+    logging_verbosity.add_argument(
         '-q', '--quiet', action='count', default=0,
         help='get less output',
     )
