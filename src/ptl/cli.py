@@ -29,6 +29,17 @@ def add_command_options(
     command: str, command_parser: argparse.ArgumentParser,
     add_tool_selection: bool = True,
 ) -> None:
+    logging_options = command_parser.add_argument_group('logging options')
+    logging_verbosity = logging_options.add_mutually_exclusive_group()
+    logging_verbosity.add_argument(
+        '-v', '--verbose', action='count', default=0,
+        help='get more output',
+    )
+    logging_verbosity.add_argument(
+        '-q', '--quiet', action='count', default=0,
+        help='get less output',
+    )
+
     if add_tool_selection:
         _tool_selection = command_parser.add_argument_group('tool selection')
         tool_selection = _tool_selection.add_mutually_exclusive_group()
@@ -49,17 +60,6 @@ def add_command_options(
     command_options.add_argument(
         '-d', '--directory', metavar='DIR', dest='input_dir',
         help='input directory',
-    )
-
-    logging_options = command_parser.add_argument_group('logging options')
-    logging_verbosity = logging_options.add_mutually_exclusive_group()
-    logging_verbosity.add_argument(
-        '-v', '--verbose', action='count', default=0,
-        help='get more output',
-    )
-    logging_verbosity.add_argument(
-        '-q', '--quiet', action='count', default=0,
-        help='get less output',
     )
 
     general_options = command_parser.add_argument_group('general options')
