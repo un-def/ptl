@@ -35,6 +35,7 @@ class Args(argparse.Namespace):
 def add_command_parser(
     subparsers: 'SubParsers',
     command: str, add_tool_selection: bool = True,
+    add_tool_options_to_usage: bool = True,
 ) -> None:
     parser = subparsers.add_parser(
         command, add_help=False,
@@ -75,6 +76,14 @@ def add_command_parser(
     )
 
     general_options = parser.add_argument_group('general options')
+
+    # since we don't want to include [-h] so as not to clutter the usage line,
+    # we format the usage before adding the help argument
+    usage = parser.format_usage()
+    if add_tool_options_to_usage:
+        usage = f'{usage.rstrip()} [{command.upper()} OPTIONS ...]\n'
+    parser.usage = usage
+
     general_options.add_argument(
         '-h', '--help', action='help',
         help='show this help message and exit',
@@ -96,7 +105,10 @@ def build_parser() -> Parser:
         title='Commands', required=True, dest='command', metavar='COMMAND')
     add_command_parser(subparsers, 'compile')
     add_command_parser(subparsers, 'sync')
-    add_command_parser(subparsers, 'show', add_tool_selection=False)
+    add_command_parser(
+        subparsers, 'show',
+        add_tool_selection=False, add_tool_options_to_usage=False,
+    )
     return parser
 
 
