@@ -1,7 +1,7 @@
 import argparse
 import logging
 import sys
-from typing import List, Optional, Sequence
+from typing import TYPE_CHECKING, List, Optional, Sequence
 
 from . import __version__, commands
 from .exceptions import Error
@@ -11,6 +11,13 @@ from .providers import (
 
 
 log = logging.getLogger(__name__)
+
+
+# type aliases
+Parser = argparse.ArgumentParser
+if TYPE_CHECKING:
+    # See: https://github.com/python/cpython/issues/101503
+    SubParsers = argparse._SubParsersAction[Parser]   # pyright: ignore
 
 
 class Args(argparse.Namespace):
@@ -25,11 +32,16 @@ class Args(argparse.Namespace):
     quiet: int
 
 
-def add_command_options(
-    command: str, command_parser: argparse.ArgumentParser,
-    add_tool_selection: bool = True,
+def add_command_parser(
+    subparsers: 'SubParsers',
+    command: str, add_tool_selection: bool = True,
 ) -> None:
-    logging_options = command_parser.add_argument_group('logging options')
+    parser = subparsers.add_parser(
+        command, add_help=False,
+        help=f'{command} requirements',
+    )
+
+    logging_options = parser.add_argument_group('logging options')
     logging_verbosity = logging_options.add_mutually_exclusive_group()
     logging_verbosity.add_argument(
         '-v', '--verbose', action='count', default=0,
@@ -41,7 +53,7 @@ def add_command_options(
     )
 
     if add_tool_selection:
-        _tool_selection = command_parser.add_argument_group('tool selection')
+        _tool_selection = parser.add_argument_group('tool selection')
         tool_selection = _tool_selection.add_mutually_exclusive_group()
         tool_selection.add_argument(
             '--pip-tools', action='store_true', dest='use_pip_tools',
@@ -56,53 +68,36 @@ def add_command_options(
             help='use custom tool',
         )
 
-    command_options = command_parser.add_argument_group(f'{command} options')
+    command_options = parser.add_argument_group(f'{command} options')
     command_options.add_argument(
         '-d', '--directory', metavar='DIR', dest='input_dir',
         help='input directory',
     )
 
-    general_options = command_parser.add_argument_group('general options')
+    general_options = parser.add_argument_group('general options')
     general_options.add_argument(
         '-h', '--help', action='help',
         help='show this help message and exit',
     )
 
 
-def build_parser() -> argparse.ArgumentParser:
-    root_parser = argparse.ArgumentParser(prog='ptl', add_help=False)
-    root_general_options = root_parser.add_argument_group('general options')
-    root_general_options.add_argument(
+def build_parser() -> Parser:
+    parser = argparse.ArgumentParser(prog='ptl', add_help=False)
+    general_options = parser.add_argument_group('general options')
+    general_options.add_argument(
         '-h', '--help', action='help',
         help='show this help message and exit',
     )
-    root_general_options.add_argument(
+    general_options.add_argument(
         '-V', '--version', action='version', version=__version__,
         help='show version and exit',
     )
-
-    subparsers = root_parser.add_subparsers(
+    subparsers = parser.add_subparsers(
         title='Commands', required=True, dest='command', metavar='COMMAND')
-
-    compile_parser = subparsers.add_parser(
-        'compile', add_help=False,
-        help='compile requirements',
-    )
-    add_command_options('compile', compile_parser)
-
-    sync_parser = subparsers.add_parser(
-        'sync', add_help=False,
-        help='sync requirements',
-    )
-    add_command_options('sync', sync_parser)
-
-    show_parser = subparsers.add_parser(
-        'show', add_help=False,
-        help='show requirements',
-    )
-    add_command_options('show', show_parser, add_tool_selection=False)
-
-    return root_parser
+    add_command_parser(subparsers, 'compile')
+    add_command_parser(subparsers, 'sync')
+    add_command_parser(subparsers, 'show', add_tool_selection=False)
+    return parser
 
 
 def main(argv: Optional[Sequence[str]] = None) -> None:
