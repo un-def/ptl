@@ -8,6 +8,7 @@ from typing import (
 
 from ._error import Error
 from .compat import StrEnum
+from .layer import LAYER_NAME_REGEX
 
 
 class InputDirectoryError(Error):
@@ -93,21 +94,17 @@ class InFile:
     dependencies: List[str]
 
     def __init__(self, name_or_path: Union[Path, str]) -> None:
-        path = Path(name_or_path)
-        if path.suffix != '.in':
-            raise InFileNameError(path.name)
-        self.original_name = path.name
-        stem: str
-        _stem = Path(path.stem)
-        if _stem.suffix == '.requirements':
-            stem = _stem.stem
-            self.generated_name = f'{stem}.ptl.requirements.in'
-            self.output_name = f'{stem}.requirements.txt'
-        else:
-            stem = _stem.name
-            self.generated_name = f'{stem}.ptl.in'
-            self.output_name = f'{stem}.txt'
+        name = Path(name_or_path).name
+        self.original_name = name
+        if not (match_ := LAYER_NAME_REGEX.fullmatch(name)):
+            raise InFileNameError(name)
+        stem, suffix, ext = match_.groups()
+        if ext != '.in':
+            raise InFileNameError(name)
         self.stem = stem
+        suffix = suffix or ''
+        self.generated_name = f'{stem}.ptl{suffix}.in'
+        self.output_name = f'{stem}{suffix}.txt'
         self.references = []
         self.dependencies = []
 
@@ -194,9 +191,7 @@ class InFile:
 
 _INLINE_COMMENT_REGEX = re.compile(r'\s+#')
 _REFERENCE_REGEX = re.compile(
-    r'^-(?P<type>[rc])\s*'
-    r'(?P<stem>[\w.-]+?)(?:\.requirements)?(?:\.in|\.txt)?$'
-)
+    fr'^-(?P<type>[rc])\s*{LAYER_NAME_REGEX.pattern}$')
 
 
 def read_infiles(input_dir: Union[Path, str]) -> Tuple[InFile, ...]:
