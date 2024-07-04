@@ -115,7 +115,11 @@ omit = ["__main__.py"]
 relative_files = true
 
 [tool.coverage.report]
-exclude_also = ["assert False", "raise AssertionError"]
+exclude_also = [
+    "assert False",
+    "raise AssertionError",
+    "if TYPE_CHECKING:"
+]
 
 [tool.tox]
 legacy_tox_ini = """
