@@ -7,6 +7,7 @@ from typing import ClassVar, Dict, Iterable, List, Tuple, Union
 
 from ._error import Error
 from .compat import StrEnum
+from .utils import is_path
 
 
 class ExecutableNotFound(Error):
@@ -83,8 +84,7 @@ Provider.register('UV', Provider(
 
 def find_executable(name_or_path: Union[Path, str]) -> Path:
     if isinstance(name_or_path, str):
-        # execname, but not /foo/bar/execname, bar/execname, ./execname, etc.
-        if Path(name_or_path).name == name_or_path:
+        if not is_path(name_or_path):
             if _exec_path := shutil.which(name_or_path):
                 return Path(_exec_path)
             raise ExecutableNotFound(name_or_path, 'not in PATH')

@@ -1,6 +1,6 @@
 import textwrap
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Union
 
 import pytest
 
@@ -20,8 +20,14 @@ class InFileTestSuite:
 
     dedent = staticmethod(dedent)
 
-    def create_file(self, name: str, content: Optional[str] = None) -> Path:
-        infile = self.input_dir / name
+    def create_file(
+        self, name_or_path: Union[Path, str], content: Optional[str] = None,
+    ) -> Path:
+        if isinstance(name_or_path, Path):
+            infile = name_or_path
+        else:
+            assert Path(name_or_path).name == name_or_path
+            infile = self.input_dir / name_or_path
         if content:
             infile.write_text(self.dedent(content))
         else:

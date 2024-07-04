@@ -5,11 +5,15 @@ from .infile import (
     CircularReference, InFileError, InFileNameError, InputDirectoryError,
     ReferenceError, UnknownReference,
 )
+from .layer import LayerError, LayerFileError, LayerNameError
 from .providers import ExecutableNotFound, ToolNotFound, ToolVersionCheckFailed
 
 
 __all__ = [
     'Error',
+    'LayerError',
+    'LayerNameError',
+    'LayerFileError',
     'InputDirectoryError',
     'InFileError',
     'InFileNameError',
