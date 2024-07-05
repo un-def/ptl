@@ -152,6 +152,41 @@ class TestSuite(InFileTestSuite):
 
         assert layer.path == self.input_dir / 'main.in'
 
+    @pytest.mark.parametrize(['filename', 'type_', 'expected_name'], [
+        ('test.in', LayerType.INFILE, 'test.in'),
+        ('test.requirements.in', LayerType.INFILE, 'test.requirements.in'),
+        ('test.txt', LayerType.LOCK, 'test.txt'),
+        ('test.requirements.txt', LayerType.LOCK, 'test.requirements.txt'),
+        ('test.in', LayerType.LOCK, 'test.txt'),
+        ('test.requirements.in', LayerType.LOCK, 'test.requirements.txt'),
+    ])
+    def test_name_inference(
+        self, filename: str, type_: LayerType, expected_name: str,
+    ) -> None:
+        self.create_file(filename)
+
+        layer = Layer(
+            'test', type_, input_dir=self.input_dir, check_exists=False)
+
+        assert layer.name == expected_name
+        assert layer.has_requirements_suffix == (
+            'requirements' in expected_name)
+
+    @pytest.mark.parametrize('path', ['./main.in', Path('main.in')])
+    def test_check_exists_false(
+        self, monkeypatch: pytest.MonkeyPatch, path: Union[Path, str],
+    ) -> None:
+        monkeypatch.chdir(self.input_dir)
+
+        layer = Layer(path, check_exists=False)
+
+        assert layer.type == LayerType.INFILE
+        assert layer.name == 'main.in'
+        assert layer.path == self.input_dir / 'main.in'
+        assert layer.stem == 'main'
+        assert layer.has_requirements_suffix is False
+        assert layer.extension == '.in'
+
     @pytest.mark.parametrize('name_or_path', [
         Path('/path/to/!main.in'), '.in', '.', '',
     ])
@@ -173,6 +208,14 @@ class TestSuite(InFileTestSuite):
     def test_error_cannot_infer_type(self) -> None:
         with pytest.raises(LayerNameError, match='cannot infer type'):
             Layer('test')
+
+    def test_error_cannot_infer_name(self) -> None:
+        # lock file cannot exist without infile, thus we don't use lock files
+        # to infer the name
+        self.create_file('test.txt')
+
+        with pytest.raises(LayerNameError, match='cannot infer name'):
+            Layer('test', LayerType.INFILE, input_dir=self.input_dir)
 
     def test_error_cannot_locate(self) -> None:
         with pytest.raises(LayerFileError, match='cannot locate layer'):

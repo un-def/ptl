@@ -1,6 +1,8 @@
 import re
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Literal, Optional, Union, cast
+from typing import (
+    Any, Dict, Iterable, List, Literal, Optional, Tuple, Union, cast,
+)
 
 from ._error import Error
 from .compat import StrEnum
@@ -56,6 +58,7 @@ class Layer:
         self, name_or_path: Union[Path, str],
         type_: Optional[LayerType] = None, *,
         input_dir: Optional[Union[Path, str]] = None,
+        check_exists: bool = True,
     ) -> None:
         path: Optional[Path]
         name: str
@@ -102,10 +105,9 @@ class Layer:
 
         if path:
             path = path.resolve()
-            self._check_exists(path)
-            self._check_is_file(path)
+            if check_exists:
+                self._check_exists(path)
             self.path = path
-            self.has_requirements_suffix = bool(suffix)
             return
 
         if not input_dir:
@@ -114,20 +116,27 @@ class Layer:
         input_dir = Path(input_dir).resolve()
 
         if is_bare_stem:
-            name = f'{stem}.requirements{ext}'
-            path = input_dir / name
-            if path.exists():
-                self._check_is_file(path)
-                self.has_requirements_suffix = True
-            else:
-                name = f'{stem}{ext}'
+            candidates: List[Tuple[str, bool]] = [
+                (f'{stem}.requirements{ext}', True),
+                (f'{stem}{ext}', False),
+            ]
+            if self.type == LayerType.LOCK:
+                candidates.append((f'{stem}.requirements.in', True))
+                candidates.append((f'{stem}.in', False))
+            for name, has_requirements_suffix in candidates:
                 path = input_dir / name
-                self.has_requirements_suffix = False
-            self.name = name
+                if self._check_exists(path, raise_exception=False):
+                    path = path.with_suffix(self.extension)
+                    self.name = path.name
+                    self.has_requirements_suffix = has_requirements_suffix
+                    break
+            else:
+                raise LayerNameError(f'cannot infer name: {stem}')
         else:
             path = input_dir / name
-        self._check_exists(path)
-        self._check_is_file(path)
+
+        if check_exists:
+            self._check_exists(path)
         self.path = path
 
     def __str__(self) -> str:
@@ -144,13 +153,18 @@ class Layer:
     def __hash__(self) -> int:
         return hash(self.path)
 
-    def _check_exists(self, path: Path) -> None:
+    def _check_exists(
+        self, path: Path, *, raise_exception: bool = True,
+    ) -> bool:
         if not path.exists():
-            raise LayerFileError(f'{path} does not exist')
-
-    def _check_is_file(self, path: Path) -> None:
+            if raise_exception:
+                raise LayerFileError(f'{path} does not exist')
+            return False
         if not path.is_file():
-            raise LayerFileError(f'{path} is not a file')
+            if raise_exception:
+                raise LayerFileError(f'{path} is not a file')
+            return False
+        return True
 
 
 def validate_layers(
