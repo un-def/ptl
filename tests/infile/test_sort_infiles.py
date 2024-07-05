@@ -41,7 +41,8 @@ def test_circular_reference() -> None:
     parent.add_reference(Reference('c', grandparent_2))
     grandparent_1.add_reference(Reference('c', child))
 
-    with pytest.raises(
-        CircularReference, match='child.in, parent.in, grandparent-1.in',
-    ):
+    with pytest.raises(CircularReference) as excinfo:
         sort_infiles([child, parent, grandparent_1])
+
+    assert set(excinfo.value.infiles) == {child, parent, grandparent_1}
+    assert 'child.in' in str(excinfo.value)

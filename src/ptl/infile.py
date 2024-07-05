@@ -1,14 +1,19 @@
+import logging
 import operator
 import re
 from contextlib import contextmanager
 from pathlib import Path
 from typing import (
-    Any, Dict, Iterable, Iterator, List, Literal, Optional, Tuple, Union, cast,
+    Any, Dict, Iterable, Iterator, List, Literal, Optional, Sequence, Set,
+    Tuple, Union, cast,
 )
 
 from ._error import Error
 from .compat import StrEnum
-from .layer import LAYER_NAME_REGEX
+from .layer import LAYER_NAME_REGEX, Layer
+
+
+log = logging.getLogger(__name__)
 
 
 class InputDirectoryError(Error):
@@ -229,8 +234,11 @@ def read_infiles(input_dir: Union[Path, str]) -> Tuple[InFile, ...]:
 
 def sort_infiles(infiles: Iterable[InFile]) -> List[InFile]:
     sorted_infiles: List[InFile] = []
+    _infiles = set(infiles)
     _infiles_with_refs: Dict[InFile, List[Reference]] = {
-        infile: infile.references for infile in infiles}
+        infile: [ref for ref in infile.references if ref.infile in _infiles]
+        for infile in _infiles
+    }
     while True:
         _processed = {
             infile for infile, refs in _infiles_with_refs.items() if not refs}
@@ -243,16 +251,54 @@ def sort_infiles(infiles: Iterable[InFile]) -> List[InFile]:
             for infile, refs in _infiles_with_refs.items()
             if infile not in _processed
         }
-    if len(_infiles_with_refs) != 0:
+    if _infiles_with_refs:
         raise CircularReference(_infiles_with_refs)
     return sorted_infiles
 
 
-def get_infiles(input_dir: Union[Path, str]) -> List[InFile]:
-    infiles = read_infiles(input_dir)
+def get_infiles(
+    input_dir: Union[Path, str], *,
+    layers: Optional[Iterable[Layer]] = None,
+    include_parent_layers: Union[
+        bool, Literal[ReferenceType.REQUIREMENTS]] = True,
+) -> List[InFile]:
+    infiles: Sequence[InFile] = read_infiles(input_dir)
     if not infiles:
         raise InputDirectoryError('no *.in files')
+    if layers is not None:
+        infiles = filter_infiles(
+            infiles, layers, include_parent_layers=include_parent_layers)
+    elif isinstance(include_parent_layers, bool) and not include_parent_layers:
+        log.warning(
+            'include_parent_layers = False ignored when no layers passed')
     return sort_infiles(infiles)
+
+
+def filter_infiles(
+    infiles: Iterable[InFile], layers: Iterable[Layer], *,
+    include_parent_layers: Union[
+        bool, Literal[ReferenceType.REQUIREMENTS]] = True,
+) -> List[InFile]:
+    _include_parents: bool
+    _parent_ref_type: Optional[ReferenceType]
+    if isinstance(include_parent_layers, ReferenceType):
+        _include_parents = True
+        _parent_ref_type = include_parent_layers
+    else:
+        _include_parents = include_parent_layers
+        _parent_ref_type = None
+    filtered: Set[InFile] = set()
+    stems_to_infiles: Dict[str, InFile] = {
+        infile.stem: infile for infile in infiles}
+    for layer in layers:
+        infile = stems_to_infiles[layer.stem]
+        filtered.add(infile)
+        if _include_parents:
+            for ref in infile.iterate_references(recursive=True):
+                if _parent_ref_type is None or _parent_ref_type == ref.type:
+                    filtered.add(ref.infile)
+    return [
+        infile for infile in stems_to_infiles.values() if infile in filtered]
 
 
 def get_input_dir(input_dir: Optional[Union[Path, str]] = None) -> Path:
