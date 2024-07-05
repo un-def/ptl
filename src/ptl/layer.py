@@ -1,6 +1,6 @@
 import re
 from pathlib import Path
-from typing import Any, Dict, Literal, Optional, Union, cast
+from typing import Any, Dict, Iterable, List, Literal, Optional, Union, cast
 
 from ._error import Error
 from .compat import StrEnum
@@ -12,6 +12,10 @@ class LayerError(Error):
 
 
 class LayerNameError(LayerError):
+    pass
+
+
+class LayerTypeError(LayerError):
     pass
 
 
@@ -50,7 +54,7 @@ class Layer:
 
     def __init__(
         self, name_or_path: Union[Path, str],
-        type_: Optional[LayerType] = None,
+        type_: Optional[LayerType] = None, *,
         input_dir: Optional[Union[Path, str]] = None,
     ) -> None:
         path: Optional[Path]
@@ -126,6 +130,12 @@ class Layer:
         self._check_is_file(path)
         self.path = path
 
+    def __str__(self) -> str:
+        return str(self.name)
+
+    def __repr__(self) -> str:   # pragma: no cover
+        return f'{self.__class__.__name__}({self.type.name}: {self})'
+
     def __eq__(self, other: Any) -> bool:   # type: ignore[misc]
         if not isinstance(other, self.__class__):
             return NotImplemented
@@ -141,3 +151,21 @@ class Layer:
     def _check_is_file(self, path: Path) -> None:
         if not path.is_file():
             raise LayerFileError(f'{path} is not a file')
+
+
+def validate_layers(
+    layers: Iterable[Union[Path, str, Layer]],
+    type_: Optional[LayerType] = None, *,
+    input_dir: Optional[Union[Path, str]] = None,
+    check_type: bool = False,
+) -> List[Layer]:
+    assert not (check_type and not type_), 'check_type = True requires type_'
+    processed: List[Layer] = []
+    for layer in layers:
+        if not isinstance(layer, Layer):
+            layer = Layer(layer, type_, input_dir=input_dir)
+        if check_type and layer.type != type_:
+            raise LayerTypeError(
+                f'{layer}: {type_} expected, got {layer.type}')
+        processed.append(layer)
+    return processed
