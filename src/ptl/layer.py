@@ -1,7 +1,7 @@
 import re
 from pathlib import Path
 from typing import (
-    Any, Dict, Iterable, List, Literal, Optional, Tuple, Union, cast,
+    Any, Dict, Iterable, List, Literal, Optional, Tuple, Union, cast, overload,
 )
 
 from ._error import Error
@@ -167,17 +167,42 @@ class Layer:
         return True
 
 
+@overload
+def validate_layers(
+    layers: Iterable[Union[Path, str, Layer]], type_: LayerType, *,
+    input_dir: Optional[Union[Path, str]] = None,
+    check_exists: bool, check_type: bool,
+) -> List[Layer]:
+    ...
+
+
+@overload
+def validate_layers(
+    layers: Iterable[Union[Path, str, Layer]], type_: None = None, *,
+    input_dir: Optional[Union[Path, str]] = None,
+    check_exists: bool, check_type: Optional[Literal[False]] = None,
+) -> List[Layer]:
+    ...
+
+
 def validate_layers(
     layers: Iterable[Union[Path, str, Layer]],
     type_: Optional[LayerType] = None, *,
     input_dir: Optional[Union[Path, str]] = None,
-    check_type: bool = False,
+    check_exists: bool, check_type: Optional[bool] = None,
 ) -> List[Layer]:
-    assert not (check_type and not type_), 'check_type = True requires type_'
+    if check_type is None:
+        if type_ is None:
+            check_type = False
+        else:
+            raise TypeError('type_ requires check_type')
+    elif check_type and not type_:
+        raise TypeError('check_type=True requires type_')
     processed: List[Layer] = []
     for layer in layers:
         if not isinstance(layer, Layer):
-            layer = Layer(layer, type_, input_dir=input_dir)
+            layer = Layer(
+                layer, type_, input_dir=input_dir, check_exists=check_exists)
         if check_type and layer.type != type_:
             raise LayerTypeError(
                 f'{layer}: {type_} expected, got {layer.type}')
