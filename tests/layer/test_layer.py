@@ -213,6 +213,7 @@ class TestSuite(InFileTestSuite):
         # lock file cannot exist without infile, thus we don't use lock files
         # to infer the name
         self.create_file('test.txt')
+        (self.input_dir / 'test.in').mkdir()
 
         with pytest.raises(LayerNameError, match='cannot infer name'):
             Layer('test', LayerType.INFILE, input_dir=self.input_dir)

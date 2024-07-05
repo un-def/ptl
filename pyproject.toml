@@ -118,7 +118,8 @@ relative_files = true
 exclude_also = [
     "assert False",
     "raise AssertionError",
-    "if TYPE_CHECKING:"
+    "if TYPE_CHECKING:",
+    '^\s*\.\.\.$',
 ]
 
 [tool.tox]
