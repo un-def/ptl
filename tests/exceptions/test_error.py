@@ -9,6 +9,12 @@ from ptl.exceptions import Error
 from tests.testlib import dedent
 
 
+# we don't want to include scripts created by these tests to the coverage
+# (pytest-cov does it via subprocess site.py trick):
+# -S     : don't imply 'import site' on initialization
+python_cmdline = [sys.executable, '-S']
+
+
 def test_error_message_from_args() -> None:
     cause = ValueError('should be ignored')
 
@@ -27,7 +33,7 @@ def test_error_message_from_cause_subprocess(tmp_cwd: Path) -> None:
         Error, match=r'boom\.py returned non-zero exit status 28$',
     ):
         try:
-            subprocess.check_call([sys.executable, './boom.py'])
+            subprocess.check_call(python_cmdline + ['./boom.py'])
         except subprocess.CalledProcessError as exc:
             raise Error from exc
 
@@ -47,7 +53,7 @@ def test_error_message_from_cause_subprocess_with_output(
         Error, match=r'boom\.py returned non-zero exit status 29:\nBOOM\n$',
     ):
         try:
-            subprocess.check_output([sys.executable, './boom.py'], text=text)
+            subprocess.check_output(python_cmdline + ['./boom.py'], text=text)
         except subprocess.CalledProcessError as exc:
             raise Error from exc
 
