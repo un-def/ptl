@@ -23,6 +23,9 @@ type:
 @test *args:
   pytest "${@}"
 
+@cov *args:
+  just test --cov --cov-report=term-missing "${@}"
+
 @tox *args:
   tox run "${@}"
 
