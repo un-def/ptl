@@ -12,7 +12,7 @@ from tests.testlib import InFileTestSuite
 class TestSuite(InFileTestSuite):
 
     @pytest.fixture(autouse=True)
-    def setup(self, monkeypatch: pytest.MonkeyPatch) -> None:
+    def setup(self, base_setup: None, monkeypatch: pytest.MonkeyPatch) -> None:
         self.monkeypatch = monkeypatch
 
     def chdir(self, directory: Optional[Path] = None) -> None:

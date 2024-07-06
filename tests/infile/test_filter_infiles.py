@@ -14,7 +14,7 @@ class TestSuite(InFileTestSuite):
     layers: Dict[str, Layer]
 
     @pytest.fixture(autouse=True)
-    def setup(self) -> None:
+    def setup(self, base_setup: None) -> None:
         """
         dev
 
