@@ -56,6 +56,46 @@ class TestSuite(InFileTestSuite):
         self.check_call_mock.assert_called_once_with(
             self.command_line + expected_files)
 
+    def test_ok_specified_layers_with_parents(self) -> None:
+        self.create_file('grandparent.in')
+        self.create_file('parent.in', '-r grandparent.txt')
+        self.create_file('child.in', '-r parent.txt')
+        expected_files: List[Path] = []
+        for lockfile in ['grandparent.txt', 'parent.txt', 'child.txt']:
+            expected_files.append(self.create_file(lockfile))
+
+        sync(
+            command_line=self.command_line, input_dir=self.input_dir,
+            layers=['child'],
+        )
+
+        self.check_call_mock.assert_called_once_with(
+            self.command_line + expected_files)
+
+    @pytest.mark.parametrize('create_not_required_lock', [False, True])
+    def test_ok_specified_layers_only(
+        self, create_not_required_lock: bool,
+    ) -> None:
+        self.create_file('grandparent.in')
+        self.create_file('parent.in', '-r grandparent.txt')
+        self.create_file('child.in', '-r parent.txt')
+        expected_files: List[Path] = []
+        # since child has no direct reference to grandparent, sort_infiles()
+        # will put then on the same level and sort lexicographically
+        for lockfile in ['child.txt', 'grandparent.txt']:
+            expected_files.append(self.create_file(lockfile))
+        # presence or absence of this lock file should not affect at all
+        if create_not_required_lock:
+            self.create_file('parent.txt')
+
+        sync(
+            command_line=self.command_line, input_dir=self.input_dir,
+            layers=['grandparent.txt', 'child'], include_parent_layers=False,
+        )
+
+        self.check_call_mock.assert_called_once_with(
+            self.command_line + expected_files)
+
     def test_error_missing_compiled_files(self) -> None:
         self.create_file('child.in', '-c parent.txt')
         self.create_file('parent.in', '-r grandparent.txt')

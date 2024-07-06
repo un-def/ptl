@@ -23,13 +23,16 @@ if TYPE_CHECKING:
 class Args(argparse.Namespace):
     command: str
 
+    verbose: int
+    quiet: int
+
     use_uv: bool
     use_pip_tools: bool
     custom_tool: Optional[str]
 
     input_dir: Optional[str]
-    verbose: int
-    quiet: int
+    layers: List[str]
+    include_parent_layers: bool
 
 
 def add_command_parser(
@@ -73,6 +76,14 @@ def add_command_parser(
     command_options.add_argument(
         '-d', '--directory', metavar='DIR', dest='input_dir',
         help='input directory',
+    )
+    command_options.add_argument(
+        'layers', nargs='*', metavar='LAYERS',
+        help=f'layers to {command}',
+    )
+    command_options.add_argument(
+        '--only', action='store_false', dest='include_parent_layers',
+        help=f"{command} only specified layers, not parent layers",
     )
 
     general_options = parser.add_argument_group('general options')
@@ -149,6 +160,13 @@ def do_main(argv: Optional[Sequence[str]] = None) -> None:
     configure_logging(verbosity)
 
     input_dir = args.input_dir
+    layers: Optional[List[str]] = args.layers
+    include_parent_layers: bool
+    if not layers:
+        layers = None
+        include_parent_layers = True
+    else:
+        include_parent_layers = args.include_parent_layers
 
     if is_tool:
         tool_command_line = get_tool_command_line(args)
@@ -164,6 +182,8 @@ def do_main(argv: Optional[Sequence[str]] = None) -> None:
             commands.sync(
                 command_line=tool_command_line,
                 input_dir=input_dir,
+                layers=layers,
+                include_parent_layers=include_parent_layers,
             )
         else:
             assert False, 'should not reach here'

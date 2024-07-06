@@ -111,16 +111,41 @@ def test_compile_call(
 
 
 @pytest.mark.parametrize(
-    ['command_line', 'expected_command_line', 'expected_input_dir'],
     [
-        (['sync'], [], None),
-        (['sync', '--directory', './req', '--quiet'], ['-q'], './req'),
-        (['sync', '-B', '-v', '--foo', '-vv'], ['-vvv', '-B', '--foo'], None),
+        'command_line', 'expected_command_line', 'expected_input_dir',
+        'expected_layers', 'expected_include_parent_layers',
+    ],
+    [
+        (
+            ['sync'],
+            [], None, None, True,
+        ),
+        (
+            ['sync', '--only', 'dev', 'main'],
+            [], None, ['dev', 'main'], False,
+        ),
+        (
+            ['sync', 'dev'],
+            [], None, ['dev'], True,
+        ),
+        (
+            ['sync', '--only'],  # --only without layers ignored
+            [], None, None, True,
+        ),
+        (
+            ['sync', '--directory', './req', '--quiet'],
+            ['-q'], './req', None, True,
+        ),
+        (
+            ['sync', '-B', '-v', '--foo', '-vv'],
+            ['-vvv', '-B', '--foo'], None, None, True,
+        ),
     ]
 )
 def test_sync_call(
     get_tool_command_line_mock: Mock, sync_mock: Mock, command_line: List[str],
     expected_command_line: List[str], expected_input_dir: Optional[str],
+    expected_layers: Optional[List[str]], expected_include_parent_layers: bool,
 ) -> None:
     _expected_command_line = (
         get_tool_command_line_mock.return_value + expected_command_line)
@@ -130,6 +155,8 @@ def test_sync_call(
     sync_mock.assert_called_once_with(
         command_line=_expected_command_line,
         input_dir=expected_input_dir,
+        layers=expected_layers,
+        include_parent_layers=expected_include_parent_layers,
     )
 
 
