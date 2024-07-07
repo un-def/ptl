@@ -1,7 +1,7 @@
 import argparse
 import logging
 import sys
-from typing import TYPE_CHECKING, List, Optional, Sequence
+from typing import TYPE_CHECKING, List, Optional, Sequence, Tuple
 
 from . import __version__, commands
 from .exceptions import Error
@@ -34,7 +34,7 @@ class Args(argparse.Namespace):
     layers: List[str]
     include_parent_layers: bool
 
-    tool_options: List[str]
+    extra_args: List[str]
 
 
 def add_command_parser(
@@ -93,7 +93,6 @@ def add_command_parser(
     # we format the usage before adding the help argument
     usage = parser.format_usage()
     if add_tool_options:
-        parser.add_argument('tool_options', nargs=argparse.REMAINDER)
         usage = f'{usage.rstrip()} [{command.upper()} OPTIONS ...]\n'
     parser.usage = usage
 
@@ -101,6 +100,8 @@ def add_command_parser(
         '-h', '--help', action='help',
         help='show this help message and exit',
     )
+
+    parser.add_argument('extra_args', nargs=argparse.REMAINDER)
 
 
 def build_parser() -> Parser:
@@ -123,7 +124,49 @@ def build_parser() -> Parser:
     return parser
 
 
+def _is_long_option(value: str) -> bool:
+    return len(value) > 2 and value.startswith('--')
+
+
+def _is_short_option(value: str) -> bool:
+    return len(value) > 1 and value[0] == '-' and value[1] != '-'
+
+
+def _rebuild_extra_args(
+    args: Args, extra_args: Sequence[str],
+) -> Tuple[Args, List[str]]:
+    extra_args = args.extra_args + list(extra_args)
+    args.extra_args = []
+    return args, extra_args
+
+
+def parse_args(parser: Parser, args: Sequence[str]) -> Tuple[Args, List[str]]:
+    ns_cls = Args
+    parsed_args, extra_args = parser.parse_known_args(args, namespace=ns_cls())
+    if not extra_args:
+        return _rebuild_extra_args(parsed_args, extra_args)
+    first_extra_arg = extra_args[0]
+    first_extra_arg_index: Optional[int] = None
+    if _is_long_option(first_extra_arg):
+        first_extra_arg_index = args.index(first_extra_arg)
+    else:
+        assert _is_short_option(first_extra_arg), first_extra_arg
+        first_extra_arg_tail = first_extra_arg[1:]
+        for index, arg in enumerate(args):
+            # -vzx -> -v consumed, -zx left, we are looking for 'zx' in '-vzx'
+            if _is_short_option(arg) and arg.endswith(first_extra_arg_tail):
+                first_extra_arg_index = index
+                break
+    assert first_extra_arg_index is not None, extra_args
+    return _rebuild_extra_args(
+        parser.parse_args(args[:first_extra_arg_index], namespace=ns_cls()),
+        args[first_extra_arg_index:],
+    )
+
+
 def main(__args: Optional[Sequence[str]] = None, /) -> None:
+    if __args is None:
+        __args = sys.argv[1:]
     try:
         do_main(__args)
     except Error as exc:
@@ -131,9 +174,9 @@ def main(__args: Optional[Sequence[str]] = None, /) -> None:
         sys.exit(1)
 
 
-def do_main(__args: Optional[Sequence[str]] = None, /) -> None:
+def do_main(__args: Sequence[str], /) -> None:
     parser = build_parser()
-    args, extra_args = parser.parse_known_args(__args, namespace=Args())
+    args, extra_args = parse_args(parser, __args)
     command = args.command
 
     is_tool: bool
@@ -173,7 +216,6 @@ def do_main(__args: Optional[Sequence[str]] = None, /) -> None:
         if verbosity_arg:
             tool_command_line.append(verbosity_arg)
         tool_command_line.extend(extra_args)
-        tool_command_line.extend(args.tool_options)
         if command == Tool.COMPILE:
             commands.compile(
                 command_line=tool_command_line,

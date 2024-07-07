@@ -55,6 +55,18 @@ def test_error_reporing(
     assert caplog.messages == ['InputDirectoryError: does not exist']
 
 
+def test_sys_argv_is_used_if_args_not_passed(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr('sys.argv', ['/path/to/script', '--foo', '--bar'])
+    mock = Mock(spec_set=do_main)
+    monkeypatch.setattr('ptl.cli.do_main', mock)
+
+    main()
+
+    mock.assert_called_once_with(['--foo', '--bar'])
+
+
 def test_extra_args_not_allowed_if_not_tool(
     capsys: pytest.CaptureFixture[str],
 ) -> None:
@@ -129,7 +141,8 @@ def test_compile_call(
             [], None, ['dev'], True,
         ),
         (
-            ['sync', '--only'],  # --only without layers ignored
+            # --only without layers ignored
+            ['sync', '--only'],
             [], None, None, True,
         ),
         (
@@ -138,7 +151,17 @@ def test_compile_call(
         ),
         (
             ['sync', '-B', '-v', '--foo', '-vv'],
-            ['-vvv', '-B', '--foo'], None, None, True,
+            ['-B', '-v', '--foo', '-vv'], None, None, True,
+        ),
+        (
+            # extra args with layers
+            ['sync', 'dev', 'main', '-P', 'pytest'],
+            ['-P', 'pytest'], None, ['dev', 'main'], True,
+        ),
+        (
+            # extra args without layers
+            ['sync', '-P', 'pytest'],
+            ['-P', 'pytest'], None, None, True,
         ),
     ]
 )
