@@ -34,11 +34,12 @@ class Args(argparse.Namespace):
     layers: List[str]
     include_parent_layers: bool
 
+    tool_options: List[str]
+
 
 def add_command_parser(
-    subparsers: 'SubParsers',
-    command: str, add_tool_selection: bool = True,
-    add_tool_options_to_usage: bool = True,
+    subparsers: 'SubParsers', command: str, *,
+    add_tool_selection: bool = True, add_tool_options: bool = True,
 ) -> None:
     parser = subparsers.add_parser(
         command, add_help=False,
@@ -91,7 +92,8 @@ def add_command_parser(
     # since we don't want to include [-h] so as not to clutter the usage line,
     # we format the usage before adding the help argument
     usage = parser.format_usage()
-    if add_tool_options_to_usage:
+    if add_tool_options:
+        parser.add_argument('tool_options', nargs=argparse.REMAINDER)
         usage = f'{usage.rstrip()} [{command.upper()} OPTIONS ...]\n'
     parser.usage = usage
 
@@ -117,23 +119,21 @@ def build_parser() -> Parser:
     add_command_parser(subparsers, 'compile')
     add_command_parser(subparsers, 'sync')
     add_command_parser(
-        subparsers, 'show',
-        add_tool_selection=False, add_tool_options_to_usage=False,
-    )
+        subparsers, 'show', add_tool_selection=False, add_tool_options=False)
     return parser
 
 
-def main(argv: Optional[Sequence[str]] = None) -> None:
+def main(__args: Optional[Sequence[str]] = None, /) -> None:
     try:
-        do_main(argv)
+        do_main(__args)
     except Error as exc:
         log.error('%s: %s', exc.__class__.__name__, exc)
         sys.exit(1)
 
 
-def do_main(argv: Optional[Sequence[str]] = None) -> None:
+def do_main(__args: Optional[Sequence[str]] = None, /) -> None:
     parser = build_parser()
-    args, tool_args = parser.parse_known_args(argv, namespace=Args())
+    args, extra_args = parser.parse_known_args(__args, namespace=Args())
     command = args.command
 
     is_tool: bool
@@ -144,10 +144,10 @@ def do_main(argv: Optional[Sequence[str]] = None) -> None:
     else:
         is_tool = True
 
-    if not is_tool and tool_args:
+    if not is_tool and extra_args:
         # only sync and compile accept extra args, other commands should raise
         # an error, the simplest way to do it is just call parse_args()
-        parser.parse_args(argv)
+        parser.parse_args(__args)
 
     verbosity: int = 0
     verbosity_arg: Optional[str] = None
@@ -172,7 +172,8 @@ def do_main(argv: Optional[Sequence[str]] = None) -> None:
         tool_command_line = get_tool_command_line(args)
         if verbosity_arg:
             tool_command_line.append(verbosity_arg)
-        tool_command_line.extend(tool_args)
+        tool_command_line.extend(extra_args)
+        tool_command_line.extend(args.tool_options)
         if command == Tool.COMPILE:
             commands.compile(
                 command_line=tool_command_line,
