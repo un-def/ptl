@@ -27,8 +27,10 @@ def sync(
     log.debug('input dir: %s', input_dir)
     if layers is not None:
         layers = validate_layers(
-            layers, type_=LayerType.LOCK, input_dir=input_dir,
-            check_exists=False, check_type=True,
+            # we check for infiles here, not locks, since we do a lock files
+            # check later; here we only want to check if layer exists
+            layers, type_=LayerType.INFILE, input_dir=input_dir,
+            check_exists=True, check_type=False,
         )
     _include_parent_layers: Literal[ReferenceType.REQUIREMENTS, False] = (
         ReferenceType.REQUIREMENTS if include_parent_layers else False)

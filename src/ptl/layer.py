@@ -106,7 +106,7 @@ class Layer:
         if path:
             path = path.resolve()
             if check_exists:
-                self._check_exists(path)
+                self._check_exists(path, stem)
             self.path = path
             return
 
@@ -117,12 +117,12 @@ class Layer:
 
         if is_bare_stem:
             candidates: List[Tuple[str, bool]] = [
-                (f'{stem}.requirements{ext}', True),
                 (f'{stem}{ext}', False),
+                (f'{stem}.requirements{ext}', True),
             ]
             if self.type == LayerType.LOCK:
-                candidates.append((f'{stem}.requirements.in', True))
                 candidates.append((f'{stem}.in', False))
+                candidates.append((f'{stem}.requirements.in', True))
             for name, has_requirements_suffix in candidates:
                 path = input_dir / name
                 if self._check_exists(path, raise_exception=False):
@@ -131,12 +131,14 @@ class Layer:
                     self.has_requirements_suffix = has_requirements_suffix
                     break
             else:
+                if check_exists:
+                    self._check_exists(input_dir / candidates[0][0], stem)
                 raise LayerNameError(f'cannot infer name: {stem}')
         else:
             path = input_dir / name
 
         if check_exists:
-            self._check_exists(path)
+            self._check_exists(path, stem)
         self.path = path
 
     def __str__(self) -> str:
@@ -154,15 +156,16 @@ class Layer:
         return hash(self.path)
 
     def _check_exists(
-        self, path: Path, *, raise_exception: bool = True,
+        self, path: Path, stem: Optional[str] = None, *,
+        raise_exception: bool = True,
     ) -> bool:
         if not path.exists():
             if raise_exception:
-                raise LayerFileError(f'{path} does not exist')
+                raise LayerFileError(f'{stem or path} does not exist')
             return False
         if not path.is_file():
             if raise_exception:
-                raise LayerFileError(f'{path} is not a file')
+                raise LayerFileError(f'{stem or path} is not a file')
             return False
         return True
 

@@ -113,7 +113,7 @@ class TestSuite(InFileTestSuite):
     def test_error_does_not_exist(self) -> None:
         self.create_file('main.in')
 
-        with pytest.raises(LayerFileError, match=r'dev\.txt does not exist'):
+        with pytest.raises(LayerFileError, match=r'dev does not exist'):
             validate_layers(
                 ['main.in', 'dev.txt'], input_dir=self.input_dir,
                 check_exists=True,

@@ -209,14 +209,28 @@ class TestSuite(InFileTestSuite):
         with pytest.raises(LayerNameError, match='cannot infer type'):
             Layer('test')
 
-    def test_error_cannot_infer_name(self) -> None:
+    def test_error_infer_name_when_check_exists_false(self) -> None:
         # lock file cannot exist without infile, thus we don't use lock files
         # to infer the name
         self.create_file('test.txt')
         (self.input_dir / 'test.in').mkdir()
 
         with pytest.raises(LayerNameError, match='cannot infer name'):
-            Layer('test', LayerType.INFILE, input_dir=self.input_dir)
+            Layer(
+                'test', LayerType.INFILE,
+                input_dir=self.input_dir, check_exists=False,
+            )
+
+    def test_error_does_not_exist_when_check_exists_true(self) -> None:
+        # lock file cannot exist without infile, thus we don't use lock files
+        # to infer the name
+        self.create_file('test.txt')
+
+        with pytest.raises(LayerFileError, match='does not exist'):
+            Layer(
+                'test', LayerType.INFILE,
+                input_dir=self.input_dir, check_exists=True,
+            )
 
     def test_error_cannot_locate(self) -> None:
         with pytest.raises(LayerFileError, match='cannot locate layer'):

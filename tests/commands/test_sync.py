@@ -6,7 +6,7 @@ from unittest.mock import Mock
 import pytest
 
 from ptl.commands import sync
-from ptl.exceptions import SyncError
+from ptl.exceptions import LayerFileError, SyncError
 
 from tests.testlib import InFileTestSuite
 
@@ -95,6 +95,19 @@ class TestSuite(InFileTestSuite):
 
         self.check_call_mock.assert_called_once_with(
             self.command_line + expected_files)
+
+    @pytest.mark.parametrize(
+        'missing_layer', ['layer3', 'layer3.in', 'layer3.txt'])
+    def test_error_unknown_layer(self, missing_layer: str) -> None:
+        self.create_file('layer1.in')
+        self.create_file('layer2.in')
+
+        with pytest.raises(LayerFileError, match='layer3 does not exist'):
+            sync(
+                command_line=self.command_line,
+                input_dir=self.input_dir,
+                layers=['layer1', 'layer2', missing_layer],
+            )
 
     def test_error_missing_compiled_files(self) -> None:
         self.create_file('child.in', '-c parent.txt')
