@@ -24,7 +24,7 @@ class TestSuite(InFileTestSuite):
             qux
         """)
 
-        show(self.input_dir)
+        show(input_dir=self.input_dir)
 
         assert capsys.readouterr().out == self.dedent("""
             # grandparent.ptl.in
@@ -44,4 +44,4 @@ class TestSuite(InFileTestSuite):
 
     def test_error_no_infiles(self) -> None:
         with pytest.raises(InputDirectoryError, match=r'no \*\.in files'):
-            show(self.input_dir)
+            show(input_dir=self.input_dir)

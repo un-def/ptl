@@ -126,8 +126,7 @@ def test_compile_call(
     [
         'command_line', 'expected_command_line', 'expected_input_dir',
         'expected_layers', 'expected_include_parent_layers',
-    ],
-    [
+    ], [
         (
             ['sync'],
             [], None, None, True,
@@ -183,14 +182,38 @@ def test_sync_call(
     )
 
 
-@pytest.mark.parametrize(['command_line', 'expected_input_dir'], [
-    (['show', '--verbose'], None),
-    (['show', '-q', '--directory', './req', '-q'], './req'),
-])
+@pytest.mark.parametrize(
+    [
+        'command_line', 'expected_input_dir',
+        'expected_layers', 'expected_include_parent_layers',
+    ], [
+        (
+            ['show', '--verbose'],
+            None, None, True,
+        ),
+        (
+            ['show', '-q', '--directory', './req', '-q', '--only'],
+            './req', None, True,
+        ),
+        (
+            ['show', '--only', 'dev', 'main'],
+            None, ['dev', 'main'], False,
+        ),
+        (
+            ['show', 'dev'],
+            None, ['dev'], True,
+        ),
+    ]
+)
 def test_show_call(
-    show_mock: Mock,
-    command_line: List[str], expected_input_dir: Optional[str],
+    show_mock: Mock, command_line: List[str],
+    expected_input_dir: Optional[str], expected_layers: Optional[List[str]],
+    expected_include_parent_layers: bool,
 ) -> None:
     main(command_line)
 
-    show_mock.assert_called_once_with(input_dir=expected_input_dir)
+    show_mock.assert_called_once_with(
+        input_dir=expected_input_dir,
+        layers=expected_layers,
+        include_parent_layers=expected_include_parent_layers,
+    )

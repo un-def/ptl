@@ -231,7 +231,11 @@ def do_main(__args: Sequence[str], /) -> None:
         else:
             assert False, 'should not reach here'
     elif command == 'show':
-        commands.show(input_dir)
+        commands.show(
+            input_dir=input_dir,
+            layers=layers,
+            include_parent_layers=include_parent_layers,
+        )
     else:
         assert False, 'should not reach here'
 
