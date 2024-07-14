@@ -8,7 +8,16 @@ from tests.testlib import InFileTestSuite
 
 class TestSuite(InFileTestSuite):
 
-    def test_ok(self, capsys: pytest.CaptureFixture[str]) -> None:
+    @pytest.fixture(autouse=True)
+    def setup(
+        self, base_setup: None, capsys: pytest.CaptureFixture[str],
+    ) -> None:
+        self.capsys = capsys
+
+    def get_output(self) -> str:
+        return self.capsys.readouterr().out
+
+    def prepare_files(self) -> None:
         self.create_file('child.in', """
             -c parent.txt
             foo  # comment
@@ -24,9 +33,12 @@ class TestSuite(InFileTestSuite):
             qux
         """)
 
+    def test_all(self) -> None:
+        self.prepare_files()
+
         show(input_dir=self.input_dir)
 
-        assert capsys.readouterr().out == self.dedent("""
+        assert self.get_output() == self.dedent("""
             # grandparent.ptl.in
             qux
 
@@ -39,6 +51,46 @@ class TestSuite(InFileTestSuite):
             -c parent.txt
             -c grandparent.txt
             foo
+
+        """)
+
+    def test_specified_layers(self) -> None:
+        self.prepare_files()
+
+        show(
+            input_dir=self.input_dir,
+            layers=['parent'], include_parent_layers=True,
+        )
+
+        assert self.get_output() == self.dedent("""
+            # grandparent.ptl.in
+            qux
+
+            # parent.ptl.in
+            -r grandparent.txt
+            bar==0.0.1
+            baz
+
+        """)
+
+    def test_only_specified_layers(self) -> None:
+        self.prepare_files()
+
+        show(
+            input_dir=self.input_dir,
+            layers=['grandparent', 'child'], include_parent_layers=False,
+        )
+
+        # since child has no direct reference to grandparent, sort_infiles()
+        # will put then on the same level and sort lexicographically
+        assert self.get_output() == self.dedent("""
+            # child.ptl.in
+            -c parent.txt
+            -c grandparent.txt
+            foo
+
+            # grandparent.ptl.in
+            qux
 
         """)
 
