@@ -42,7 +42,11 @@ ptl is a [pip-tools](https://pip-tools.readthedocs.io/) wrapper for [multi-layer
 4. Run `ptl compile`:
 
     ```
-    usage: ptl compile [--pip-tools | --uv | --tool TOOL] [-d DIR] [-v | -q] [-h]
+    usage: ptl compile [-v | -q] [--pip-tools | --uv | --tool TOOL] [-d DIR] [--only] [LAYERS ...] [COMPILE OPTIONS ...]
+
+    logging options:
+      -v, --verbose         get more output
+      -q, --quiet           get less output
 
     tool selection:
       --pip-tools           use `pip-compile`
@@ -52,8 +56,8 @@ ptl is a [pip-tools](https://pip-tools.readthedocs.io/) wrapper for [multi-layer
     compile options:
       -d DIR, --directory DIR
                             input directory
-      -v, --verbose         get more output
-      -q, --quiet           get less output
+      LAYERS                layers to compile
+      --only                compile only specified layers, not parent layers
     ```
 
     By default, ptl checks for pip-tools and uv, and if both are installed, it conservatively prefers pip-tools. With `--pip-tools`/`--uv`/`--tool TOOL` you can explicitly choose the tool to use or provide your own tool.
@@ -65,7 +69,11 @@ ptl is a [pip-tools](https://pip-tools.readthedocs.io/) wrapper for [multi-layer
 5. Run `ptl sync`:
 
     ```
-    usage: ptl sync [--pip-tools | --uv | --tool TOOL] [-d DIR] [-v | -q] [-h]
+    usage: ptl sync [-v | -q] [--pip-tools | --uv | --tool TOOL] [-d DIR] [--only] [LAYERS ...] [SYNC OPTIONS ...]
+
+    logging options:
+      -v, --verbose         get more output
+      -q, --quiet           get less output
 
     tool selection:
       --pip-tools           use `pip-sync`
@@ -75,8 +83,8 @@ ptl is a [pip-tools](https://pip-tools.readthedocs.io/) wrapper for [multi-layer
     sync options:
       -d DIR, --directory DIR
                             input directory
-      -v, --verbose         get more output
-      -q, --quiet           get less output
+      LAYERS                layers to sync
+      --only                sync only specified layers, not parent layers
     ```
 
     As with `ptl compile`, any extra arguments are passed to the sync tool.
