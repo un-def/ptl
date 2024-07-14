@@ -83,5 +83,5 @@ ptl is a [pip-tools](https://pip-tools.readthedocs.io/) wrapper for [multi-layer
 
 ## Planned Features
 
-* Ability to compile/sync only some of the files.
-* Configuration via the config file and/or the enviroment variables.
+* [x] Ability to compile/sync only some of the files ([0.2.0](https://github.com/un-def/ptl/releases/tag/0.2.0))
+* [ ] Configuration via the config file and/or the enviroment variables.
