@@ -94,7 +94,7 @@ def add_command_parser(
     usage = parser.format_usage()
     if add_tool_options:
         usage = f'{usage.rstrip()} [{command.upper()} OPTIONS ...]\n'
-    parser.usage = usage
+    parser.usage = usage[len('usage: '):]
 
     general_options.add_argument(
         '-h', '--help', action='help',
