@@ -101,7 +101,8 @@ def add_command_parser(
         help='show this help message and exit',
     )
 
-    parser.add_argument('extra_args', nargs=argparse.REMAINDER)
+    parser.add_argument(
+        'extra_args', nargs=argparse.REMAINDER, help=argparse.SUPPRESS)
 
 
 def build_parser() -> Parser:
