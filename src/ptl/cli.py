@@ -220,6 +220,8 @@ def do_main(__args: Sequence[str], /) -> None:
             commands.compile(
                 command_line=tool_command_line,
                 input_dir=input_dir,
+                layers=layers,
+                include_parent_layers=include_parent_layers,
             )
         elif command == Tool.SYNC:
             commands.sync(

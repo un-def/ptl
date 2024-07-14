@@ -99,17 +99,44 @@ def test_configure_logging_call(
 
 
 @pytest.mark.parametrize(
-    ['command_line', 'expected_command_line', 'expected_input_dir'],
     [
-        (['compile'], [], None),
-        (['compile', '-q', '-q', '--foo'], ['-qq', '--foo'], None),
-        (['compile', '--verbose', '-d', 'reqs'], ['-v'], 'reqs'),
+        'command_line', 'expected_command_line', 'expected_input_dir',
+        'expected_layers', 'expected_include_parent_layers',
+    ], [
+        (
+            ['compile'],
+            [], None, None, True,
+        ),
+        (
+            # --only without layers ignored
+            ['compile', '-q', '-q', '--only', '--foo'],
+            ['-qq', '--foo'], None, None, True,
+        ),
+        (
+            ['compile', '--only', 'dev', 'main'],
+            [], None, ['dev', 'main'], False,
+        ),
+        (
+            ['compile', '--verbose', '-d', 'reqs', 'dev'],
+            ['-v'], 'reqs', ['dev'], True,
+        ),
+        (
+            # extra args with layers
+            ['compile', '--quiet', 'dev', 'main', '-P', 'pytest'],
+            ['-q', '-P', 'pytest'], None, ['dev', 'main'], True,
+        ),
+        (
+            # extra args without layers
+            ['compile', '-v', '-v', '-P', 'pytest'],
+            ['-vv', '-P', 'pytest'], None, None, True,
+        ),
     ]
 )
 def test_compile_call(
     get_tool_command_line_mock: Mock, compile_mock: Mock,
-    command_line: List[str],
-    expected_command_line: List[str], expected_input_dir: Optional[str],
+    command_line: List[str], expected_command_line: List[str],
+    expected_input_dir: Optional[str],
+    expected_layers: Optional[List[str]], expected_include_parent_layers: bool,
 ) -> None:
     _expected_command_line = (
         get_tool_command_line_mock.return_value + expected_command_line)
@@ -119,6 +146,8 @@ def test_compile_call(
     compile_mock.assert_called_once_with(
         command_line=_expected_command_line,
         input_dir=expected_input_dir,
+        layers=expected_layers,
+        include_parent_layers=expected_include_parent_layers,
     )
 
 
