@@ -17,5 +17,5 @@ The first public release.
 
 
 [Unreleased]: https://github.com/un-def/ptl/compare/0.2.0...HEAD
-[0.2.0]: https://github.com/un-def/ptl/releases/tag/0.1.0
+[0.2.0]: https://github.com/un-def/ptl/releases/tag/0.2.0
 [0.1.0]: https://github.com/un-def/ptl/releases/tag/0.1.0
