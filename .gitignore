@@ -3,6 +3,7 @@
 !.editorconfig
 !.gitignore
 !.gitblameignore
+!.python-version
 
 *.py[co]
 
