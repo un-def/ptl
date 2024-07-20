@@ -7,7 +7,7 @@
 
 *.py[co]
 
-*.ptl.in
+*.ptl.requirements.in
 /requirements/local.*
 
 /src/ptl.egg-info/
