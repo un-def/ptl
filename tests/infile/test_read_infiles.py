@@ -5,10 +5,10 @@ import pytest
 from ptl.exceptions import InputDirectoryError, UnknownReference
 from ptl.infile import InFile, Reference, read_infiles
 
-from tests.testlib import InFileTestSuite
+from tests.testlib import InFileTestSuiteBase
 
 
-class TestSuite(InFileTestSuite):
+class TestSuite(InFileTestSuiteBase):
 
     def get_main_infile(self, infiles: Iterable[InFile]) -> InFile:
         for infile in infiles:

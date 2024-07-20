@@ -5,10 +5,10 @@ import pytest
 from ptl.exceptions import ToolNotFound
 from ptl.providers import Provider, Tool, find_tool
 
-from .base import BaseTestSuite
+from .base import TestSuiteBase
 
 
-class TestSuite(BaseTestSuite):
+class TestSuite(TestSuiteBase):
 
     def set_candidates(self, *candidates: str) -> None:
         mock = Mock(spec_set=Provider.get_tool_candidates)

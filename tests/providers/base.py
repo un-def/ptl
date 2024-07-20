@@ -5,7 +5,7 @@ import pytest
 from tests.testlib import dedent
 
 
-class BaseTestSuite:
+class TestSuiteBase:
     monkeypatch: pytest.MonkeyPatch
     tmp_path: Path
     tmp_cwd: Path

@@ -6,10 +6,10 @@ import pytest
 from ptl.exceptions import LayerFileError, LayerNameError, LayerTypeError
 from ptl.layer import Layer, LayerType, validate_layers
 
-from tests.testlib import InFileTestSuite
+from tests.testlib import InFileTestSuiteBase
 
 
-class TestSuite(InFileTestSuite):
+class TestSuite(InFileTestSuiteBase):
 
     @pytest.fixture(autouse=True)
     def setup(self, base_setup: None, monkeypatch: pytest.MonkeyPatch) -> None:

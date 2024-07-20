@@ -107,6 +107,7 @@ reportUnnecessaryContains = "error"
 [tool.pytest.ini_options]
 addopts = ["--strict-markers"]
 testpaths = ["tests"]
+python_classes = ["*TestSuite"]
 filterwarnings = ["error"]
 
 [tool.coverage.run]

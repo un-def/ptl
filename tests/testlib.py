@@ -11,7 +11,7 @@ def dedent(text: str, *, strip: bool = True) -> str:
     return textwrap.dedent(text)
 
 
-class InFileTestSuite:
+class InFileTestSuiteBase:
     input_dir: Path
 
     @pytest.fixture(autouse=True)

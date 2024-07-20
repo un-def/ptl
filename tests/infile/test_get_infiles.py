@@ -5,10 +5,10 @@ import pytest
 from ptl.infile import InFile, InputDirectoryError, ReferenceType, get_infiles
 from ptl.layer import Layer
 
-from tests.testlib import InFileTestSuite
+from tests.testlib import InFileTestSuiteBase
 
 
-class TestSuite(InFileTestSuite):
+class TestSuite(InFileTestSuiteBase):
 
     def prepare_files(self) -> None:
         self.create_file('dev.in')

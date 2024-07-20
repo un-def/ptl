@@ -8,10 +8,10 @@ import pytest
 from ptl.commands import sync
 from ptl.exceptions import LayerFileError, SyncError
 
-from tests.testlib import InFileTestSuite
+from tests.testlib import InFileTestSuiteBase
 
 
-class TestSuite(InFileTestSuite):
+class TestSuite(InFileTestSuiteBase):
     monkeypatch: pytest.MonkeyPatch
     tmp_cwd: Path
     check_call_mock: Mock

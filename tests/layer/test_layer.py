@@ -7,10 +7,10 @@ from ptl.exceptions import LayerFileError, LayerNameError
 from ptl.infile import InFile
 from ptl.layer import Layer, LayerType
 
-from tests.testlib import InFileTestSuite
+from tests.testlib import InFileTestSuiteBase
 
 
-class TestSuite(InFileTestSuite):
+class TestSuite(InFileTestSuiteBase):
 
     def test_equal(self) -> None:
         self.create_file('main.in')

@@ -6,10 +6,10 @@ import pytest
 from ptl.infile import InFile, Reference, ReferenceType, filter_infiles
 from ptl.layer import Layer
 
-from tests.testlib import InFileTestSuite
+from tests.testlib import InFileTestSuiteBase
 
 
-class TestSuite(InFileTestSuite):
+class TestSuite(InFileTestSuiteBase):
     infiles: Dict[str, InFile]
     layers: Dict[str, Layer]
 

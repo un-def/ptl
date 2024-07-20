@@ -3,10 +3,10 @@ import pytest
 from ptl.exceptions import ExecutableNotFound
 from ptl.providers import process_command_line
 
-from .base import BaseTestSuite
+from .base import TestSuiteBase
 
 
-class TestSuite(BaseTestSuite):
+class TestSuite(TestSuiteBase):
 
     def test_absolute_path(self) -> None:
         exec_path = self.tmp_path / 'path' / 'to' / 'exec.sh'

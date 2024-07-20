@@ -3,10 +3,10 @@ import pytest
 from ptl.commands import show
 from ptl.exceptions import InputDirectoryError
 
-from tests.testlib import InFileTestSuite
+from tests.testlib import InFileTestSuiteBase
 
 
-class TestSuite(InFileTestSuite):
+class TestSuite(InFileTestSuiteBase):
 
     @pytest.fixture(autouse=True)
     def setup(

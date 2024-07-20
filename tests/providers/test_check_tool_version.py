@@ -3,10 +3,10 @@ import pytest
 from ptl.exceptions import ToolVersionCheckFailed
 from ptl.providers import check_tool_version
 
-from .base import BaseTestSuite
+from .base import TestSuiteBase
 
 
-class TestSuite(BaseTestSuite):
+class TestSuite(TestSuiteBase):
 
     def test_absolute_path(self) -> None:
         exec_path = self.tmp_path / 'path' / 'to' / 'exec.sh'
