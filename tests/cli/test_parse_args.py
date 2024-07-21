@@ -9,10 +9,12 @@ from ptl.cli import Args, build_parser, parse_args
 DEFAULTS: Dict[str, Any] = dict(   # type: ignore[misc]
     verbose=0,
     quiet=0,
+    config_path=None,
+    no_config=None,
     use_uv=False,
     use_pip_tools=False,
     custom_tool=None,
-    input_dir=None,
+    directory=None,
     layers=list,
     include_parent_layers=True,
     extra_args=list,
@@ -68,7 +70,7 @@ def set_defaults(args: Args) -> None:
         Args(
             command='compile',
             verbose=2,
-            input_dir='foo',
+            directory='foo',
         ),
         id='short-options-collapsed-with-extra',
     ),
@@ -80,6 +82,26 @@ def set_defaults(args: Args) -> None:
             quiet=1,
         ),
         id='anything-after-extra-args-is-extra-arg',
+    ),
+    pytest.param(
+        ['sync', '-c', 'path/to/config.toml', '-d', 'path/to/reqs'],
+        [],
+        Args(
+            command='sync',
+            config_path='path/to/config.toml',
+            directory='path/to/reqs',
+        ),
+        id='config-path-and-directory',
+    ),
+    pytest.param(
+        ['sync', '--no-config', '--tool=path/to/tool'],
+        [],
+        Args(
+            command='sync',
+            no_config=True,
+            custom_tool='path/to/tool',
+        ),
+        id='no-config-and-custom-tool',
     ),
 ])
 def test(

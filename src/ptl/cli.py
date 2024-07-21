@@ -1,23 +1,29 @@
+from __future__ import annotations
+
 import argparse
 import logging
 import sys
-from typing import TYPE_CHECKING, List, Optional, Sequence, Tuple
+from typing import (
+    TYPE_CHECKING, List, Literal, Optional, Sequence, Tuple, Union,
+)
 
 from . import __version__, commands
+from .config import Config
 from .exceptions import Error
 from .providers import (
     Provider, Tool, check_tool_version, find_tool, process_command_line,
 )
 
 
-log = logging.getLogger(__name__)
-
-
-# type aliases
-Parser = argparse.ArgumentParser
 if TYPE_CHECKING:
+    from pathlib import Path
+
+    Parser = argparse.ArgumentParser
     # See: https://github.com/python/cpython/issues/101503
     SubParsers = argparse._SubParsersAction[Parser]   # pyright: ignore
+
+
+log = logging.getLogger(__name__)
 
 
 class Args(argparse.Namespace):
@@ -26,11 +32,14 @@ class Args(argparse.Namespace):
     verbose: int
     quiet: int
 
+    config_path: Optional[str]
+    no_config: Optional[Literal[True]]
+
     use_uv: bool
     use_pip_tools: bool
     custom_tool: Optional[str]
 
-    input_dir: Optional[str]
+    directory: Optional[str]
     layers: List[str]
     include_parent_layers: bool
 
@@ -57,6 +66,18 @@ def add_command_parser(
         help='get less output',
     )
 
+    _config_options = parser.add_argument_group('config options')
+    config_options = _config_options.add_mutually_exclusive_group()
+    config_options.add_argument(
+        '-c', '--config', dest='config_path', metavar='PATH',
+        help='config file',
+    )
+    config_options.add_argument(
+        '--no-config', action='store_const', const=True,
+        dest='no_config',
+        help="don't load config file",
+    )
+
     if add_tool_selection:
         _tool_selection = parser.add_argument_group('tool selection')
         tool_selection = _tool_selection.add_mutually_exclusive_group()
@@ -75,7 +96,7 @@ def add_command_parser(
 
     command_options = parser.add_argument_group(f'{command} options')
     command_options.add_argument(
-        '-d', '--directory', metavar='DIR', dest='input_dir',
+        '-d', '--directory', metavar='DIR', dest='directory',
         help='input directory',
     )
     command_options.add_argument(
@@ -181,8 +202,9 @@ def do_main(__args: Sequence[str], /) -> None:
     command = args.command
 
     is_tool: bool
+    tool: Optional[Tool] = None
     try:
-        Tool(command)
+        tool = Tool(command)
     except ValueError:
         is_tool = False
     else:
@@ -193,17 +215,26 @@ def do_main(__args: Sequence[str], /) -> None:
         # an error, the simplest way to do it is just call parse_args()
         parser.parse_args(__args)
 
-    verbosity: int = 0
-    verbosity_arg: Optional[str] = None
+    config = Config(args.config_path, ignore_config_file=args.no_config)
+
+    verbosity: int
     if quiet := args.quiet:
         verbosity = -quiet
-        verbosity_arg = '-{}'.format('q' * quiet)
     elif verbose := args.verbose:
         verbosity = verbose
-        verbosity_arg = '-{}'.format('v' * verbose)
+    else:
+        verbosity = config.verbosity
     configure_logging(verbosity)
+    verbosity_arg: Optional[str] = None
+    if verbosity > 0:
+        verbosity_arg = '-{}'.format('v' * verbosity)
+    elif verbosity < 0:
+        verbosity_arg = '-{}'.format('q' * -verbosity)
 
-    input_dir = args.input_dir
+    input_dir: Union[Path, str, None] = args.directory
+    if input_dir is None:
+        input_dir = config.directory
+
     layers: Optional[List[str]] = args.layers
     include_parent_layers: bool
     if not layers:
@@ -213,10 +244,17 @@ def do_main(__args: Sequence[str], /) -> None:
         include_parent_layers = args.include_parent_layers
 
     if is_tool:
-        tool_command_line = get_tool_command_line(args)
+        assert tool is not None
+        tool_command_line = get_tool_command_line(config, args)
         if verbosity_arg:
             tool_command_line.append(verbosity_arg)
-        tool_command_line.extend(extra_args)
+        tool_options: Optional[List[str]]
+        if extra_args:
+            tool_options = extra_args
+        else:
+            tool_options = config.get_tool_options(tool)
+        if tool_options:
+            tool_command_line.extend(tool_options)
         if command == Tool.COMPILE:
             commands.compile(
                 command_line=tool_command_line,
@@ -258,20 +296,33 @@ def configure_logging(verbosity: int) -> None:
         level=log_level, format=log_format, datefmt='%d-%m-%Y %H:%M:%S')
 
 
-def get_tool_command_line(args: Args) -> List[str]:
-    tool = Tool(args.command)
+def get_tool_command_line(config: Config, args: Args) -> List[str]:
+    command_line: List[str]
     if command_line_str := args.custom_tool:
         command_line = process_command_line(command_line_str)
+        log.debug('using %s', command_line)
+        return command_line
+    tool = Tool(args.command)
+    provider: Optional[Provider] = None
+    if args.use_uv:
+        provider = Provider.UV
+    elif args.use_pip_tools:
+        provider = Provider.PIP_TOOLS
     else:
-        provider: Optional[Provider] = None
-        if args.use_pip_tools:
-            provider = Provider.PIP_TOOLS
-        elif args.use_uv:
-            provider = Provider.UV
-        if provider:
-            command_line_str = provider.tools[tool]
-            command_line, version = check_tool_version(command_line_str)
+        provider_or_command_line_str_or_none = config.get_tool(tool)
+        if isinstance(provider_or_command_line_str_or_none, str):
+            command_line = process_command_line(
+                provider_or_command_line_str_or_none)
+            log.debug('using %s', command_line)
+            return command_line
+        if isinstance(provider_or_command_line_str_or_none, Provider):
+            provider = provider_or_command_line_str_or_none
         else:
-            command_line, version = find_tool(tool)
-        log.debug('using %s %s', command_line, version)
+            assert provider_or_command_line_str_or_none is None
+    if provider:
+        command_line_str = provider.tools[tool]
+        command_line, version = check_tool_version(command_line_str)
+    else:
+        command_line, version = find_tool(tool)
+    log.debug('using %s %s', command_line, version)
     return command_line

@@ -25,6 +25,9 @@ classifiers = [
 requires-python = ">=3.8"
 dynamic = ["version"]
 
+[project.optional-dependencies]
+toml = ["tomli; python_version < '3.11'"]
+
 [project.urls]
 Homepage = "https://github.com/un-def/ptl"
 Repository = "https://github.com/un-def/ptl.git"
@@ -43,7 +46,6 @@ include-package-data = false
 
 [tool.ruff]
 preview = true
-src = ["src"]
 line-length = 79
 
 [tool.ruff.lint]
@@ -58,7 +60,7 @@ sections = ["FUTURE", "STDLIB", "THIRDPARTY", "FIRSTPARTY", "TESTS", "LOCALFOLDE
 known_tests = ["tests"]
 
 [tool.mypy]
-mypy_path = "${MYPY_CONFIG_FILE_DIR}/src"
+mypy_path = "${MYPY_CONFIG_FILE_DIR}/src:${MYPY_CONFIG_FILE_DIR}/stubs"
 packages = ["ptl", "tests"]
 python_version = "3.8"   # the lowest Python version we support
 disallow_any_unimported = true
@@ -82,6 +84,7 @@ extra_checks = true
 warn_unused_configs = true
 
 [tool.pyright]
+stubPath = "stubs"
 include = ["src/**", "tests/**"]
 pythonVersion = "3.8"   # the lowest Python version we support
 typeCheckingMode = "strict"
@@ -123,6 +126,9 @@ exclude_also = [
     '^\s*\.\.\.$',
 ]
 
+[tool.coverage.paths]
+src = ["src/", ".tox/py*/lib/python*/site-packages/"]
+
 [tool.tox]
 legacy_tox_ini = """
     [tox]
@@ -130,6 +136,7 @@ legacy_tox_ini = """
 
     [testenv]
     description = run tests
+    extras = toml
     deps = -r requirements/test.requirements.in
     commands = pytest {posargs}
 
@@ -166,3 +173,7 @@ no-header = true
 strip-extras = true
 allow-unsafe = true
 resolver = "backtracking"
+
+[tool.ptl]
+directory = "requirements"
+tool = ":uv:"

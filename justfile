@@ -23,8 +23,11 @@ type:
 @test *args:
   pytest "${@}"
 
-@cov *args:
-  just test --cov --cov-report=term-missing "${@}"
+cov:
+  #!/bin/sh -eu
+  coverage erase
+  tox run -q --skip-env '^(?!py\d{2,3}$)' -- -q --cov --cov-append --cov-report=
+  coverage report -m
 
 @tox *args:
   tox run "${@}"
@@ -40,10 +43,10 @@ _ensure-uv:
   test "${installed}" = "${required}" || pip install "${required}"
 
 @sync *args: _ensure-uv
-  just run sync --uv "${@}"
+  just run sync "${@}"
 
 @compile *args: _ensure-uv
-  just run compile --uv "${@}"
+  just run compile "${@}"
 
 @build:
   rm -rf build
