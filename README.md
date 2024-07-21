@@ -89,7 +89,150 @@ ptl is a [pip-tools](https://pip-tools.readthedocs.io/) wrapper for [multi-layer
 
     As with `ptl compile`, any extra arguments are passed to the sync tool.
 
+## Configuration
+
+ptl can be configured via 3 mechanisms, from highest to lowest precedence:
+
+* command line options
+* environment variables
+* configuration files
+
+### Configuration Files
+
+ptl uses [TOML](https://toml.io/) format for its configuration file. Starting from Python 3.11, a TOML parser is included in the standard library (the `tomllib` module). In order to use configuration files with older Python versions, install the [tomli](https://github.com/hukkin/tomli) library, either manually:
+
+```
+pip install tomli
+```
+
+or as the `toml` “extra”:
+
+```
+pip install 'ptl[toml]'
+```
+
+It's safe to always install the `toml` “extra” since it installs `tomli` only for older Python versions.
+
+If you don't need configuration files support, you can disable this feature with the `--no-config` command line flag or the `PTL_NO_CONFIG_FILE=1` environment variable, especially if you use older Python versions without tomli installed and have the `pyproject.toml` file in the project directory, since ptl will fail with the `ConfigError: no toml parser found` error in this case.
+
+#### Configuration File Location
+
+By default, ptl searches for a configuration file in the current working directory in the following order:
+
+* `.ptl.toml`
+* `ptl.toml`
+* `pyproject.toml`
+
+The first file found is used as a configuration file, even if it does not contain ptl configuration table. ptl does not merge configuration settings from several configuration files.
+
+A location of the configuration file can be specified with the `-c PATH`/`--config=PATH` command line option or the `PTL_CONFIG_FILE=PATH` environment variable.
+
+#### Configuration File Structure
+
+All configuration settings are stored within the `[tool.ptl]` table. Settings specific to `sync`/`compile` commands are stored within corresponding `[tool.ptl.sync]`/`[tool.ptl.compile]` subtables. All settings are optional.
+
+#### Configuration File Example
+
+The following configuration contains all supported settings.
+
+```toml
+[tool.ptl]
+directory = "deps"
+verbosity = 1
+tool = ":pip-tools:"
+
+[tool.ptl.compile]
+tool = ":uv:"
+tool-options = "-U --no-build"
+
+[tool.ptl.sync]
+tool = "scripts/dep-sync.sh"
+tool-options = "--ask"
+```
+
+### Configuration Settings
+
+For each setting, its sources are listed in the following order:
+
+* command line argument(s)
+* enviroment variable(s)
+* configuration file setting(s)
+
+#### Directory
+
+* `-d`/`--directory`
+* `PTL_DIRECTORY`
+* `tool.ptl.directory`
+
+A directory where input files and generated lock files are stored. By default, ptl uses the `requirements` directory if it exists, otherwise the current working directory.
+
+#### Verbosity
+
+* `-v`/`--verbose`/`-q`/`--quiet`
+* `PTL_VERBOSITY`
+* `tool.ptl.verbosity`
+
+A level of verbosity. The default value is 0, each `-v`/`--verbose` adds 1, each `-q`/`--quiet` subtracts 1. `PTL_VERBOSITY`/`tool.ptl.verbosity` are only used if there is no any verbosity argument in the command line, otherwise they are ignored.
+
+#### Compile Tool
+
+* `--pip-tools`/`--uv`/`--tool`
+* `PTL_COMPILE_TOOL`/`PTL_TOOL`
+* `too.ptl.compile.tool`/`tool.ptl.tool`
+
+A tool used for the `compile` command. By default, ptl searches for pip-tools, then uv.
+
+For `pip-compile` from `pip-tools` use one of:
+
+* `ptl compile --pip-tools`
+* `PTL_COMPILE_TOOL=:pip-tools:` or `PTL_TOOL=:pip-tools:`
+* `tool = ":pip-tools:"` in the `[tool.ptl.compile]` or `[tool.ptl]` table
+
+For `uv pip compile` use one of:
+
+* `ptl compile --uv`
+* `PTL_COMPILE_TOOL=:uv:` or `PTL_TOOL=:uv:`
+* `tool = ":uv:"` in the `[tool.ptl.compile]` or `[tool.ptl]` table
+
+For some custom tool use one of:
+
+* `ptl compile --tool=scripts/custom.sh`
+* `PTL_COMPILE_TOOL=scripts/custom.sh` or `PTL_TOOL=scripts/custom.sh`
+* `tool = "scripts/custom.sh"` in the `[tool.ptl.compile]` or `[tool.ptl]` table
+
+The order of precedence, from highest to lowest:
+
+* the command line options
+* the `PIP_COMPILE_TOOL` variable
+* the `tool` setting in the `[tool.ptl.compile]` table
+* the `PIP_TOOL` variable
+* the `tool` setting in the `[tool.ptl]` table
+
+#### Compile Tool Options
+
+* any extra arguments not handled by ptl itself
+* `PTL_COMPILE_TOOL_OPTIONS`
+* `too.ptl.compile.tool-options`
+
+Command line arguments passed to the compile tool. `PTL_COMPILE_TOOL_OPTIONS`/`too.ptl.compile.tool-options` are only used if there is no any extra arguments in the command line, otherwise they are ignored (not concatenated).
+
+#### Sync Tool
+
+* `--pip-tools`/`--uv`/`--tool`
+* `PTL_SYNC_TOOL`/`PTL_TOOL`
+* `too.ptl.sync.tool`/`tool.ptl.tool`
+
+Same as **Compile Tool**, but for the `sync` command.
+
+#### Sync Tool Options
+
+* any extra arguments not handled by ptl itself
+* `PTL_SYNC_TOOL_OPTIONS`
+* `too.ptl.sync.tool-options`
+
+Same as **Compile Tool Options**, but for the `sync` command.
+
 ## Planned Features
 
 * [x] Ability to compile/sync only some of the files ([0.2.0](https://github.com/un-def/ptl/releases/tag/0.2.0))
-* [ ] Configuration via the config file and/or the enviroment variables.
+* [x] Configuration via the config file and/or the enviroment variables ([0.3.0](https://github.com/un-def/ptl/releases/tag/0.3.0))
