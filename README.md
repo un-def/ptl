@@ -17,7 +17,7 @@ ptl is a [pip-tools](https://pip-tools.readthedocs.io/) wrapper for [multi-layer
 * It supports not only pip-tools, but also [uv](https://github.com/astral-sh/uv), or any other compatible tool.
 * It has `pip-sync` functionality as well.
 
-## Usage
+## Workflow
 
 1. Install ptl:
 
@@ -37,16 +37,21 @@ ptl is a [pip-tools](https://pip-tools.readthedocs.io/) wrapper for [multi-layer
     pip install uv
     ```
 
-3. Prepare input files. By default, ptl looks for input files in the `requirements` directory and the current working directory. `<layer>.in` and `<layer>.requirements.in` filename formats are supported (although the latter may seem unnecessarily verbose, it's better suited for syntax highlighting rules — basically, any `*.requirements.{in,txt}` file as a “pip requirements” file). You can check out [the `requirements` directory of the ptl repository](https://github.com/un-def/ptl/tree/master/requirements) for an example (yes, we [eat our own dog food](https://en.wikipedia.org/wiki/Eating_your_own_dog_food)).
+3. Prepare input files. See [Input File Format](#input-file-format) for details. By default, ptl looks for input files in the `requirements` directory and the current working directory. `<layer>.in` and `<layer>.requirements.in` filename formats are supported (although the latter may seem unnecessarily verbose, it's better suited for syntax highlighting rules — basically, any `*.requirements.{in,txt}` file as a “pip requirements” file). You can check out [the `requirements` directory of the ptl repository](https://github.com/un-def/ptl/tree/master/requirements) for an example (yes, we [eat our own dog food](https://en.wikipedia.org/wiki/Eating_your_own_dog_food)).
 
 4. Run `ptl compile`:
 
     ```
-    usage: ptl compile [-v | -q] [--pip-tools | --uv | --tool TOOL] [-d DIR] [--only] [LAYERS ...] [COMPILE OPTIONS ...]
+    usage: ptl compile [-v | -q] [-c PATH | --no-config] [--pip-tools | --uv | --tool TOOL] [-d DIR] [--only] [LAYERS ...] [COMPILE OPTIONS ...]
 
     logging options:
       -v, --verbose         get more output
       -q, --quiet           get less output
+
+    config options:
+      -c PATH, --config PATH
+                            config file
+      --no-config           don't load config file
 
     tool selection:
       --pip-tools           use `pip-compile`
@@ -69,11 +74,16 @@ ptl is a [pip-tools](https://pip-tools.readthedocs.io/) wrapper for [multi-layer
 5. Run `ptl sync`:
 
     ```
-    usage: ptl sync [-v | -q] [--pip-tools | --uv | --tool TOOL] [-d DIR] [--only] [LAYERS ...] [SYNC OPTIONS ...]
+    usage: ptl sync [-v | -q] [-c PATH | --no-config] [--pip-tools | --uv | --tool TOOL] [-d DIR] [--only] [LAYERS ...] [SYNC OPTIONS ...]
 
     logging options:
       -v, --verbose         get more output
       -q, --quiet           get less output
+
+    config options:
+      -c PATH, --config PATH
+                            config file
+      --no-config           don't load config file
 
     tool selection:
       --pip-tools           use `pip-sync`
@@ -138,7 +148,7 @@ pip install 'ptl[toml]'
 
 It's safe to always install the `toml` “extra” since it installs `tomli` only for older Python versions.
 
-If you don't need configuration files support, you can disable this feature with the `--no-config` command line flag or the `PTL_NO_CONFIG_FILE=1` environment variable, especially if you use older Python versions without tomli installed and have the `pyproject.toml` file in the project directory, since ptl will fail with the `ConfigError: no toml parser found` error in this case.
+If you don't need configuration files support, you can disable this feature with the `--no-config` command line flag or the `PTL_NO_CONFIG_FILE=1` environment variable, especially if you an older Python version without tomli installed and have the `pyproject.toml` file in the project directory, since ptl will fail with the `ConfigError: no toml parser found` error in this case.
 
 #### Configuration File Location
 
@@ -189,7 +199,7 @@ For each setting, its sources are listed in the following order:
 * `PTL_DIRECTORY`
 * `tool.ptl.directory`
 
-A directory where input files and generated lock files are stored. By default, ptl uses the `requirements` directory if it exists, otherwise the current working directory.
+A directory where input files and compiled lock files are stored. By default, ptl uses the `requirements` directory if it exists, otherwise the current working directory.
 
 #### Verbosity
 
@@ -227,7 +237,7 @@ For some custom tool use one of:
 
 The order of precedence, from highest to lowest:
 
-* the command line options
+* the command line option
 * the `PIP_COMPILE_TOOL` variable
 * the `tool` setting in the `[tool.ptl.compile]` table
 * the `PIP_TOOL` variable
@@ -247,7 +257,7 @@ Command line arguments passed to the compile tool. `PTL_COMPILE_TOOL_OPTIONS`/`t
 * `PTL_SYNC_TOOL`/`PTL_TOOL`
 * `too.ptl.sync.tool`/`tool.ptl.tool`
 
-Same as **Compile Tool**, but for the `sync` command.
+Same as [Compile Tool](#compile-tool), but for the `sync` command.
 
 #### Sync Tool Options
 
@@ -255,7 +265,7 @@ Same as **Compile Tool**, but for the `sync` command.
 * `PTL_SYNC_TOOL_OPTIONS`
 * `too.ptl.sync.tool-options`
 
-Same as **Compile Tool Options**, but for the `sync` command.
+Same as [Compile Tool Options](#compile-tool-options), but for the `sync` command.
 
 ## Planned Features
 
